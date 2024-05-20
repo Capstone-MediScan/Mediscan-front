@@ -1,1 +1,1 @@
-# Mediscan-front
+# MediScan
