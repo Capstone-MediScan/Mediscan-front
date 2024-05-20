@@ -1,4 +1,4 @@
-package com.example.practice_flutter
+package com.example.mediscan
 
 import io.flutter.embedding.android.FlutterActivity
 
