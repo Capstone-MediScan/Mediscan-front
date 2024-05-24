@@ -4,7 +4,6 @@ import 'package:mediscan/capsulelist.dart';
 import 'package:mediscan/capsulescan.dart';
 import 'package:mediscan/capsulesearch.dart';
 import 'package:mediscan/result.dart';
-import 'package:mediscan/splashscreen.dart';
 import 'package:mediscan/theme/colors.dart';
 
 class ResultList {
@@ -36,7 +35,102 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-  List<ResultList> list = [
+  int currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      HomePage(),
+      const CapsuleListPage(),
+      const CapsuleListPage(),
+      const CapsuleListPage(),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: whiteColor,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 65,
+        title: const Text(
+          'MediScan',
+          style:
+              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+        ),
+      ),
+      body: IndexedStack(
+        index: currentIndex,
+        children: screens,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedItemColor: mainColor,
+        unselectedItemColor: backColor,
+        selectedLabelStyle:
+            const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
+        unselectedLabelStyle:
+            const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
+        backgroundColor: whiteColor,
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            label: '홈',
+            icon: Image.asset(
+              'assets/images/home.png',
+              width: 30,
+            ),
+            activeIcon: Image.asset(
+              'assets/images/homeSelected.png',
+              width: 30,
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: '리스트',
+            icon: Image.asset(
+              'assets/images/list.png',
+              width: 30,
+            ),
+            activeIcon: Image.asset(
+              'assets/images/listSelected.png',
+              width: 30,
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: '알림',
+            icon: Image.asset(
+              'assets/images/alert.png',
+              width: 30,
+            ),
+            activeIcon: Image.asset(
+              'assets/images/alertSelected.png',
+              width: 30,
+            ),
+          ),
+          BottomNavigationBarItem(
+            label: 'my',
+            icon: Image.asset(
+              'assets/images/my.png',
+              width: 30,
+            ),
+            activeIcon: Image.asset(
+              'assets/images/mySelected.png',
+              width: 30,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  final List<ResultList> list = [
     ResultList(
       id: 1,
       percent: 67,
@@ -74,56 +168,24 @@ class MyAppState extends State<MyApp> {
     ),
   ];
 
+  HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style:
-              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const PageBtnComponent(),
-                  const SizedBox(height: 87),
-                  const RecentSearchComponent(),
-                  RecentSearchListComponent(list: list),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CapsuleListPage(),
-                          ),
-                        );
-                      },
-                      child: const Text('리스트')),
-                  ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SplashScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('진입화면')),
-                ],
-              ),
-            ),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(children: [
+              const PageBtnComponent(),
+              const SizedBox(height: 87),
+              const RecentSearchComponent(),
+              RecentSearchListComponent(list: list),
+              const SizedBox(height: 30),
+            ]),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
