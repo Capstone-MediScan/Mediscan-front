@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mediscan/selectresult.dart';
+import 'package:mediscan/selectsearchresult.dart';
 import 'package:mediscan/theme/colors.dart';
 
 class CapsuleSearch extends StatefulWidget {
@@ -113,14 +113,15 @@ class CapsuleSearchState extends State<CapsuleSearch> {
                     setSelectedColor: setSelectedColor,
                   ),
                   const SizedBox(height: 120),
-                  const Text(
-                    '식별표시 앞 뒤 , 모양 , 색상을 모두 입력해 주세요.',
-                    style: TextStyle(
-                      fontFamily: 'NotoSans500',
-                      fontSize: 12,
-                      color: redColor,
+                  if (isWarning)
+                    const Text(
+                      '식별표시 앞 뒤 , 모양 , 색상을 모두 입력해 주세요.',
+                      style: TextStyle(
+                        fontFamily: 'NotoSans500',
+                        fontSize: 12,
+                        color: redColor,
+                      ),
                     ),
-                  ),
                   SearchButton(
                     buttonText: "결과 확인하기",
                     selectedShape: selectedShape,
@@ -145,7 +146,7 @@ class CapsuleSearchState extends State<CapsuleSearch> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SelectPage(),
+                            builder: (context) => const SelectSearchPage(),
                           ),
                         );
                       }
