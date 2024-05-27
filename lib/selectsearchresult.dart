@@ -6,16 +6,12 @@ import 'package:mediscan/theme/colors.dart';
 class ResultList {
   final int id;
   final File? image;
-  final File? frontImage; //약 이미지 앞
-  final File? backImage; //약 이미지 뒤
   final String title;
   final String description;
 
   ResultList({
     required this.id,
     this.image,
-    this.frontImage,
-    this.backImage,
     required this.title,
     required this.description,
   });
@@ -36,40 +32,30 @@ class SelectSearchPageState extends State<SelectSearchPage> {
     ResultList(
       id: 1,
       image: null,
-      frontImage: null,
-      backImage: null,
       title: '리피논정 80밀리그램 (지토르 어쩌구저쩌구쏼쏼쏴로쌀)',
       description: '전립선비대증약',
     ),
     ResultList(
       id: 2,
       image: null,
-      frontImage: null,
-      backImage: null,
       title: '리피논정 80밀리그램 (아토르 어찌구)',
       description: '전립선비대증약',
     ),
     ResultList(
       id: 3,
       image: null,
-      frontImage: null,
-      backImage: null,
       title: '리피논정 80밀리그램',
       description: '전립선비대증약',
     ),
     ResultList(
       id: 4,
       image: null,
-      frontImage: null,
-      backImage: null,
       title: '리피논정 80밀리그램',
       description: '전립선비대증약',
     ),
     ResultList(
       id: 5,
       image: null,
-      frontImage: null,
-      backImage: null,
       title: '리피논정 80밀리그램 (아토르 어찌구)',
       description: '전립선비대증약',
     ),
@@ -110,15 +96,10 @@ class SelectSearchPageState extends State<SelectSearchPage> {
                   PhotoComponent(
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
-                    frontImage: selectedId != 0
+                    selectImage: selectedId != 0
                         ? buttonTexts
                             .firstWhere((result) => result.id == selectedId)
-                            .frontImage
-                        : null,
-                    backImage: selectedId != 0
-                        ? buttonTexts
-                            .firstWhere((result) => result.id == selectedId)
-                            .backImage
+                            .image
                         : null,
                   ),
                   CapsuleSelect(
@@ -146,50 +127,20 @@ class SelectSearchPageState extends State<SelectSearchPage> {
 class PhotoComponent extends StatefulWidget {
   final bool isWarning;
   final Function(bool) onWarningChanged;
-  final File? frontImage;
-  final File? backImage;
+  final File? selectImage;
 
-  const PhotoComponent(
-      {super.key,
-      required this.isWarning,
-      required this.onWarningChanged,
-      this.frontImage,
-      this.backImage});
+  const PhotoComponent({
+    super.key,
+    required this.isWarning,
+    required this.onWarningChanged,
+    this.selectImage,
+  });
 
   @override
   PhotoState createState() => PhotoState();
 }
 
 class PhotoState extends State<PhotoComponent> {
-  Widget buildImage(File? image) {
-    return Column(
-      children: [
-        SizedBox(
-          width: 140,
-          height: 140,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: image == null
-                ? null
-                : Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: FileImage(image),
-                        fit: BoxFit.cover,
-                      ),
-                      border: Border.all(
-                        color: mainColor,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -227,40 +178,43 @@ class PhotoState extends State<PhotoComponent> {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            widget.frontImage != null
-                ? buildImage(widget.frontImage)
-                : Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: whiteColor,
-                      border: Border.all(
-                        color: mainColor,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          widget.selectImage != null
+              ? SizedBox(
+                  width: 290,
+                  height: 155,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: widget.selectImage == null
+                        ? null
+                        : Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: FileImage(widget.selectImage!),
+                                fit: BoxFit.cover,
+                              ),
+                              border: Border.all(
+                                color: mainColor,
+                                width: 1,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
                   ),
-            const SizedBox(width: 30),
-            widget.backImage != null
-                ? buildImage(widget.backImage)
-                : Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: whiteColor,
-                      border: Border.all(
-                        color: mainColor,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
+                )
+              : Container(
+                  width: 290,
+                  height: 155,
+                  decoration: BoxDecoration(
+                    color: whiteColor,
+                    border: Border.all(
+                      color: mainColor,
+                      width: 1,
                     ),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-          ],
-        ),
+                ),
+        ]),
         Padding(
           padding: const EdgeInsets.only(bottom: 16, top: 16),
           child: Text(
@@ -334,7 +288,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         SizedBox(
-                          width: 40,
+                          width: 74.84,
                           height: 40,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
@@ -362,7 +316,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
-                              width: 260,
+                              width: 230,
                               child: Text(
                                 data.title,
                                 overflow: TextOverflow.ellipsis,
@@ -403,11 +357,12 @@ class ResultButton extends StatefulWidget {
   final bool isWarning;
   final Function(bool) onWarningChanged;
 
-  const ResultButton(
-      {super.key,
-      required this.selectedId,
-      required this.isWarning,
-      required this.onWarningChanged});
+  const ResultButton({
+    super.key,
+    required this.selectedId,
+    required this.isWarning,
+    required this.onWarningChanged,
+  });
 
   @override
   ResultButtonState createState() => ResultButtonState();
