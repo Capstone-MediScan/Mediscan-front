@@ -49,17 +49,6 @@ class CapsuleSearchState extends State<CapsuleSearch> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style:
-              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
-        ),
-      ),
       body: Column(
         children: [
           Expanded(
@@ -112,16 +101,15 @@ class CapsuleSearchState extends State<CapsuleSearch> {
                     selectedColor: selectedColor,
                     setSelectedColor: setSelectedColor,
                   ),
-                  const SizedBox(height: 120),
-                  if (isWarning)
-                    const Text(
-                      '식별표시 앞 뒤 , 모양 , 색상을 모두 입력해 주세요.',
-                      style: TextStyle(
-                        fontFamily: 'NotoSans500',
-                        fontSize: 12,
-                        color: redColor,
-                      ),
+                  const SizedBox(height: 50),
+                  Text(
+                    '식별표시 앞 뒤 , 모양 , 색상을 모두 입력해 주세요.',
+                    style: TextStyle(
+                      fontFamily: 'NotoSans500',
+                      fontSize: 12,
+                      color: isWarning ? redColor : whiteColor,
                     ),
+                  ),
                   SearchButton(
                     buttonText: "결과 확인하기",
                     selectedShape: selectedShape,
@@ -487,7 +475,7 @@ class SearchButtonState extends State<SearchButton> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16, left: 38, right: 38, top: 50),
+      padding: const EdgeInsets.only(bottom: 16, left: 38, right: 38, top: 5),
       child: Row(
         children: [
           Expanded(

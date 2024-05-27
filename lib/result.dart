@@ -69,17 +69,6 @@ class ResultPageState extends State<ResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style:
-              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
-        ),
-      ),
       body: Column(
         children: [
           Expanded(
@@ -275,7 +264,7 @@ class ResultState extends State<ResultComponent> {
         listContent('길이 (가로, 세로, 두께) ( mm )',
             "${widget.medicine.width} / ${widget.medicine.height} / ${widget.medicine.thickness}"),
         listContent('회사', widget.medicine.company),
-        const SizedBox(height: 68),
+        const SizedBox(height: 20),
       ],
     );
   }

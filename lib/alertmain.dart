@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mediscan/theme/colors.dart';
-import 'package:timezone/data/latest.dart' as tz;
+//import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:io' show Platform;
 import 'package:mediscan/alertsetting.dart'; // 필요한 다른 파일 import
 
 class MediScanHome extends StatefulWidget {
-  const MediScanHome({Key? key}) : super(key: key); // const 추가
+  const MediScanHome({super.key});
 
   @override
-  _MediScanHomeState createState() => _MediScanHomeState();
+  MediScanHomeState createState() => MediScanHomeState();
 }
 
-class _MediScanHomeState extends State<MediScanHome> {
+class MediScanHomeState extends State<MediScanHome> {
   List<String> alertInfos = []; // 알림 정보를 저장할 리스트
   List<bool> alertStatuses = []; // 각 알림의 토글 상태를 저장할 리스트
 
@@ -155,7 +155,7 @@ class _MediScanHomeState extends State<MediScanHome> {
                       onPressed: () async {
                         final timeParts = alertInfos[index].split(' ');
                         final timeOfDayParts = timeParts[0].split(':');
-                        final period = timeParts[1];
+                        //final period = timeParts[1];
                         final timeOfDay = TimeOfDay(
                           hour: int.parse(timeOfDayParts[0]),
                           minute: int.parse(timeOfDayParts[1]),

@@ -35,109 +35,132 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'MediScan',
+      home: const Root(),
       theme: ThemeData(scaffoldBackgroundColor: whiteColor),
-      home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class Root extends StatefulWidget {
+  const Root({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  RootState createState() => RootState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class RootState extends State<Root> {
   int currentIndex = 0;
+
+  final List<Widget> pages = [
+    HomePage(),
+    const CapsuleListPage(),
+    const MediScanHome(),
+    const CapsuleListPage(),
+  ];
+
+  late List<GlobalKey<NavigatorState>> navigatorKeyList;
+
+  @override
+  void initState() {
+    super.initState();
+    navigatorKeyList =
+        List.generate(pages.length, (index) => GlobalKey<NavigatorState>());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> screens = [
-      HomePage(),
-      const CapsuleListPage(),
-      const MediScanHome(),
-      const CapsuleListPage(),
-    ];
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style:
-              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+    return WillPopScope(
+      onWillPop: () async {
+        return !(await navigatorKeyList[currentIndex].currentState!.maybePop());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: whiteColor,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 65,
+          title: const Text(
+            'MediScan',
+            style: TextStyle(
+                color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+          ),
         ),
-      ),
-      body: IndexedStack(
-        index: currentIndex,
-        children: screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedItemColor: mainColor,
-        unselectedItemColor: backColor,
-        selectedLabelStyle:
-            const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
-        unselectedLabelStyle:
-            const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
-        backgroundColor: whiteColor,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            label: '홈',
-            icon: Image.asset(
-              'assets/images/home.png',
-              width: 30,
+        body: IndexedStack(
+          index: currentIndex,
+          children: pages.map((page) {
+            int index = pages.indexOf(page);
+            return Navigator(
+              key: navigatorKeyList[index],
+              onGenerateRoute: (_) {
+                return MaterialPageRoute(builder: (context) => page);
+              },
+            );
+          }).toList(),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          selectedItemColor: mainColor,
+          unselectedItemColor: backColor,
+          selectedLabelStyle:
+              const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
+          unselectedLabelStyle:
+              const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
+          backgroundColor: whiteColor,
+          onTap: (index) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
+          items: [
+            BottomNavigationBarItem(
+              label: '홈',
+              icon: Image.asset(
+                'assets/images/home.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/homeSelected.png',
+                width: 30,
+              ),
             ),
-            activeIcon: Image.asset(
-              'assets/images/homeSelected.png',
-              width: 30,
+            BottomNavigationBarItem(
+              label: '리스트',
+              icon: Image.asset(
+                'assets/images/list.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/listSelected.png',
+                width: 30,
+              ),
             ),
-          ),
-          BottomNavigationBarItem(
-            label: '리스트',
-            icon: Image.asset(
-              'assets/images/list.png',
-              width: 30,
+            BottomNavigationBarItem(
+              label: '알림',
+              icon: Image.asset(
+                'assets/images/alert.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/alertSelected.png',
+                width: 30,
+              ),
             ),
-            activeIcon: Image.asset(
-              'assets/images/listSelected.png',
-              width: 30,
-            ),
-          ),
-          BottomNavigationBarItem(
-            label: '알림',
-            icon: Image.asset(
-              'assets/images/alert.png',
-              width: 30,
-            ),
-            activeIcon: Image.asset(
-              'assets/images/alertSelected.png',
-              width: 30,
-            ),
-          ),
-          BottomNavigationBarItem(
-            label: 'my',
-            icon: Image.asset(
-              'assets/images/my.png',
-              width: 30,
-            ),
-            activeIcon: Image.asset(
-              'assets/images/mySelected.png',
-              width: 30,
-            ),
-          )
-        ],
+            BottomNavigationBarItem(
+              label: 'my',
+              icon: Image.asset(
+                'assets/images/my.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/mySelected.png',
+                width: 30,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
