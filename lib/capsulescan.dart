@@ -46,17 +46,6 @@ class CapsuleScanState extends State<CapsuleScan> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style:
-              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
-        ),
-      ),
       body: Column(
         children: [
           Expanded(

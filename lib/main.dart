@@ -4,7 +4,6 @@ import 'package:mediscan/capsulelist.dart';
 import 'package:mediscan/capsulescan.dart';
 import 'package:mediscan/capsulesearch.dart';
 import 'package:mediscan/result.dart';
-import 'package:mediscan/splashscreen.dart';
 import 'package:mediscan/theme/colors.dart';
 import 'package:mediscan/alertmain.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -36,106 +35,132 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'MediScan',
+      home: const Root(),
       theme: ThemeData(scaffoldBackgroundColor: whiteColor),
-      home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class Root extends StatefulWidget {
+  const Root({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  RootState createState() => RootState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class RootState extends State<Root> {
   int currentIndex = 0;
+
+  final List<Widget> pages = [
+    HomePage(),
+    const CapsuleListPage(),
+    const MediScanHome(),
+    const CapsuleListPage(),
+  ];
+
+  late List<GlobalKey<NavigatorState>> navigatorKeyList;
+
+  @override
+  void initState() {
+    super.initState();
+    navigatorKeyList =
+        List.generate(pages.length, (index) => GlobalKey<NavigatorState>());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> screens = [
-      HomePage(),
-      const CapsuleListPage(),
-      const MediScanHome(),
-      const CapsuleListPage(),
-    ];
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style: TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+    return WillPopScope(
+      onWillPop: () async {
+        return !(await navigatorKeyList[currentIndex].currentState!.maybePop());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: whiteColor,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 65,
+          title: const Text(
+            'MediScan',
+            style: TextStyle(
+                color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+          ),
         ),
-      ),
-      body: IndexedStack(
-        index: currentIndex,
-        children: screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedItemColor: mainColor,
-        unselectedItemColor: backColor,
-        selectedLabelStyle: const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
-        backgroundColor: whiteColor,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            label: '홈',
-            icon: Image.asset(
-              'assets/images/home.png',
-              width: 30,
+        body: IndexedStack(
+          index: currentIndex,
+          children: pages.map((page) {
+            int index = pages.indexOf(page);
+            return Navigator(
+              key: navigatorKeyList[index],
+              onGenerateRoute: (_) {
+                return MaterialPageRoute(builder: (context) => page);
+              },
+            );
+          }).toList(),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          selectedItemColor: mainColor,
+          unselectedItemColor: backColor,
+          selectedLabelStyle:
+              const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
+          unselectedLabelStyle:
+              const TextStyle(fontFamily: 'NotoSans500', fontSize: 12),
+          backgroundColor: whiteColor,
+          onTap: (index) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
+          items: [
+            BottomNavigationBarItem(
+              label: '홈',
+              icon: Image.asset(
+                'assets/images/home.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/homeSelected.png',
+                width: 30,
+              ),
             ),
-            activeIcon: Image.asset(
-              'assets/images/homeSelected.png',
-              width: 30,
+            BottomNavigationBarItem(
+              label: '리스트',
+              icon: Image.asset(
+                'assets/images/list.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/listSelected.png',
+                width: 30,
+              ),
             ),
-          ),
-          BottomNavigationBarItem(
-            label: '리스트',
-            icon: Image.asset(
-              'assets/images/list.png',
-              width: 30,
+            BottomNavigationBarItem(
+              label: '알림',
+              icon: Image.asset(
+                'assets/images/alert.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/alertSelected.png',
+                width: 30,
+              ),
             ),
-            activeIcon: Image.asset(
-              'assets/images/listSelected.png',
-              width: 30,
-            ),
-          ),
-          BottomNavigationBarItem(
-            label: '알림',
-            icon: Image.asset(
-              'assets/images/alert.png',
-              width: 30,
-            ),
-            activeIcon: Image.asset(
-              'assets/images/alertSelected.png',
-              width: 30,
-            ),
-          ),
-          BottomNavigationBarItem(
-            label: 'my',
-            icon: Image.asset(
-              'assets/images/my.png',
-              width: 30,
-            ),
-            activeIcon: Image.asset(
-              'assets/images/mySelected.png',
-              width: 30,
-            ),
-          )
-        ],
+            BottomNavigationBarItem(
+              label: 'my',
+              icon: Image.asset(
+                'assets/images/my.png',
+                width: 30,
+              ),
+              activeIcon: Image.asset(
+                'assets/images/mySelected.png',
+                width: 30,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -211,11 +236,11 @@ class PageBtnComponent extends StatefulWidget {
 
 class PageBtnState extends State<PageBtnComponent> {
   Widget pageButton(
-      String image,
-      String title,
-      String content,
-      Widget Function() destinationWidgetBuilder,
-      ) {
+    String image,
+    String title,
+    String content,
+    Widget Function() destinationWidgetBuilder,
+  ) {
     return Column(
       children: [
         Padding(
@@ -290,13 +315,13 @@ class PageBtnState extends State<PageBtnComponent> {
           "assets/images/scan.png",
           "알약 스캔",
           "알약을 스캔 또는 업로드하여 검색해보세요!",
-              () => const CapsuleScan(),
+          () => const CapsuleScan(),
         ),
         pageButton(
           "assets/images/search.png",
           "알약 검색",
           "알약을 카테고리를 활용하여 검색해보세요!",
-              () => const CapsuleSearch(),
+          () => const CapsuleSearch(),
         ),
       ],
     );
@@ -354,7 +379,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
   Widget build(BuildContext context) {
     return Column(
       children: widget.list.map(
-            (data) {
+        (data) {
           return Padding(
             padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
             child: GestureDetector(
@@ -371,25 +396,25 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
               child: Row(
                 children: [
                   SizedBox(
-                    width: 50,
+                    width: 93.55,
                     height: 50,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: data.image == null
                           ? Container(
-                        decoration: BoxDecoration(
-                          color: whiteColor,
-                          border: Border.all(
-                            color: mainColor,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      )
+                              decoration: BoxDecoration(
+                                color: whiteColor,
+                                border: Border.all(
+                                  color: mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            )
                           : Image.file(
-                        data.image!,
-                        fit: BoxFit.cover,
-                      ),
+                              data.image!,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   const SizedBox(
@@ -399,7 +424,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 274,
+                        width: 250,
                         child: Text(
                           data.title,
                           overflow: TextOverflow.ellipsis,
@@ -412,7 +437,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                       ),
                       const SizedBox(height: 5),
                       SizedBox(
-                        width: 274,
+                        width: 250,
                         child: Text(
                           data.description,
                           overflow: TextOverflow.ellipsis,

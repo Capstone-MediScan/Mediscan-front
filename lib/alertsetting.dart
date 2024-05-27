@@ -7,17 +7,17 @@ class AlertSetting extends StatefulWidget {
   final int? alertIndex; // 알림의 인덱스를 전달하기 위한 필드
 
   const AlertSetting({
-    Key? key,
+    super.key,
     required this.initialTime,
     required this.daysStatus,
     this.alertIndex,
-  }) : super(key: key);
+  });
 
   @override
-  _AlertSettingState createState() => _AlertSettingState();
+  AlertSettingState createState() => AlertSettingState();
 }
 
-class _AlertSettingState extends State<AlertSetting> {
+class AlertSettingState extends State<AlertSetting> {
   late TimeOfDay selectedTime;
   late Map<String, bool> days;
   TextEditingController memoController = TextEditingController();
@@ -65,7 +65,8 @@ class _AlertSettingState extends State<AlertSetting> {
   }
 
   void _deleteAlert() {
-    Navigator.of(context).pop({'action': 'delete', 'index': widget.alertIndex}); // 알림 삭제 동작을 전달
+    Navigator.of(context)
+        .pop({'action': 'delete', 'index': widget.alertIndex}); // 알림 삭제 동작을 전달
   }
 
   @override
@@ -73,12 +74,11 @@ class _AlertSettingState extends State<AlertSetting> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black), // const 추가
+          icon: Image.asset(
+            'assets/images/back.png',
+            width: 9,
+          ),
           onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'MediScan',
-          style: TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
         ),
         backgroundColor: Colors.white, // 배경색을 흰색으로 설정
         elevation: 0,
@@ -102,7 +102,8 @@ class _AlertSettingState extends State<AlertSetting> {
                 children: [
                   Text(
                     selectedTime.format(context),
-                    style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold), // const 추가
+                    style: const TextStyle(
+                        fontSize: 48, fontWeight: FontWeight.bold), // const 추가
                   ),
                   const SizedBox(width: 10), // const 추가
                   const Icon(Icons.keyboard_arrow_down, size: 32), // const 추가
@@ -111,18 +112,19 @@ class _AlertSettingState extends State<AlertSetting> {
             ),
             const SizedBox(height: 20), // const 추가
             ElevatedButton(
-              onPressed: () => _showModalBottomSheet(context),
-              child: const Text('요일 선택'), // const 추가
+              onPressed: () => _showModalBottomSheet(context), // const 추가
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black12,
                 padding: const EdgeInsets.symmetric(vertical: 15), // const 추가
                 minimumSize: const Size(double.infinity, 50), // const 추가
               ),
+              child: const Text('요일 선택'),
             ),
             const SizedBox(height: 20), // const 추가
             TextField(
               controller: memoController,
-              decoration: const InputDecoration( // const 추가
+              decoration: const InputDecoration(
+                // const 추가
                 labelText: '메모',
                 border: OutlineInputBorder(),
               ),
@@ -137,15 +139,17 @@ class _AlertSettingState extends State<AlertSetting> {
         padding: const EdgeInsets.all(20), // const 추가
         child: ElevatedButton(
           onPressed: () {
-            String formattedTime = "${selectedTime.hourOfPeriod}:${selectedTime.minute.toString().padLeft(2, '0')} ${selectedTime.period == DayPeriod.am ? 'AM' : 'PM'}";
-            Navigator.of(context).pop({'action': 'save', 'time': formattedTime}); // 시간 정보를 반환
-          },
-          child: const Text('저장하기', style: TextStyle(color: Colors.white)), // const 추가 및 텍스트 색상 흰색으로 설정
+            String formattedTime =
+                "${selectedTime.hourOfPeriod}:${selectedTime.minute.toString().padLeft(2, '0')} ${selectedTime.period == DayPeriod.am ? 'AM' : 'PM'}";
+            Navigator.of(context)
+                .pop({'action': 'save', 'time': formattedTime}); // 시간 정보를 반환
+          }, // const 추가 및 텍스트 색상 흰색으로 설정
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF435D3D), // const 추가
             padding: const EdgeInsets.symmetric(vertical: 15), // const 추가
             minimumSize: const Size(double.infinity, 50), // const 추가
           ),
+          child: const Text('저장하기', style: TextStyle(color: Colors.white)),
         ),
       ),
     );
@@ -154,13 +158,13 @@ class _AlertSettingState extends State<AlertSetting> {
 
 class DaySelectionModal extends StatefulWidget {
   final Map<String, bool> days;
-  const DaySelectionModal({Key? key, required this.days}) : super(key: key); // const 추가
+  const DaySelectionModal({super.key, required this.days}); // const 추가
 
   @override
-  _DaySelectionModalState createState() => _DaySelectionModalState();
+  DaySelectionModalState createState() => DaySelectionModalState();
 }
 
-class _DaySelectionModalState extends State<DaySelectionModal> {
+class DaySelectionModalState extends State<DaySelectionModal> {
   @override
   Widget build(BuildContext context) {
     return Container(

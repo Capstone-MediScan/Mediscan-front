@@ -116,7 +116,7 @@ class ListState extends State<ListComponent> {
               child: Row(
                 children: [
                   SizedBox(
-                    width: 50,
+                    width: 93.55,
                     height: 50,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
@@ -144,7 +144,7 @@ class ListState extends State<ListComponent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 274,
+                        width: 250,
                         child: Text(
                           data.title,
                           overflow: TextOverflow.ellipsis,
@@ -157,7 +157,7 @@ class ListState extends State<ListComponent> {
                       ),
                       const SizedBox(height: 5),
                       SizedBox(
-                        width: 274,
+                        width: 250,
                         child: Text(
                           data.description,
                           overflow: TextOverflow.ellipsis,

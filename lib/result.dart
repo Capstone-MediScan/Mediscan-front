@@ -69,17 +69,6 @@ class ResultPageState extends State<ResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: whiteColor,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 65,
-        title: const Text(
-          'MediScan',
-          style:
-              TextStyle(color: mainColor, fontFamily: 'Inter900', fontSize: 24),
-        ),
-      ),
       body: Column(
         children: [
           Expanded(
@@ -227,19 +216,17 @@ class ResultState extends State<ResultComponent> {
       children: [
         Padding(
           padding: const EdgeInsets.only(
-            top: 16,
-            bottom: 16,
+            top: 9,
           ),
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: widget.medicine.image == null
                     ? Container(
-                        width: 180,
-                        height: 180,
+                        width: 290,
+                        height: 155,
                         decoration: BoxDecoration(
                           color: whiteColor,
                           border: Border.all(
@@ -251,21 +238,18 @@ class ResultState extends State<ResultComponent> {
                       )
                     : Image.file(
                         widget.medicine.image!,
-                        fit: BoxFit.cover,
+                        width: 290,
+                        height: 155,
                       ),
               ),
-              const SizedBox(width: 20),
-              SizedBox(
-                width: 158,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Text(
-                    widget.medicine.title,
-                    style: const TextStyle(
-                      color: blackColor,
-                      fontFamily: 'NotoSans900',
-                      fontSize: 16,
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(top: 40, bottom: 40),
+                child: Text(
+                  widget.medicine.title,
+                  style: const TextStyle(
+                    color: blackColor,
+                    fontFamily: 'NotoSans900',
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -280,7 +264,7 @@ class ResultState extends State<ResultComponent> {
         listContent('길이 (가로, 세로, 두께) ( mm )',
             "${widget.medicine.width} / ${widget.medicine.height} / ${widget.medicine.thickness}"),
         listContent('회사', widget.medicine.company),
-        const SizedBox(height: 68),
+        const SizedBox(height: 20),
       ],
     );
   }
