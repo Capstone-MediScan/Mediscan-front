@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mediscan/theme/colors.dart';
+//import 'package:mediscan/theme/colors.dart';
 
 class AlertSetting extends StatefulWidget {
   final TimeOfDay initialTime;
