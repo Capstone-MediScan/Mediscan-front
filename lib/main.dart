@@ -422,7 +422,6 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                   MaterialPageRoute(
                     builder: (context) => ResultPage(
                       selectedId: data.pillId,
-                      selectImage: '',
                     ),
                   ),
                 );

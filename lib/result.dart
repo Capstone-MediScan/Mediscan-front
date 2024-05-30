@@ -9,53 +9,54 @@ import 'package:http/http.dart' as http;
 class MedicineModel {
   final String pillId;
   final String pillName;
-  final String pillNameEng;
-  final String detail;
+  final String? pillNameEng;
+  final String? detail;
   final String? frontMarking;
   final String? backMarking;
-  final String shape;
-  final String width;
-  final String length;
-  final String thick;
-  final String entpName;
+  final String? shape;
+  final String? width;
+  final String? length;
+  final String? thick;
+  final String? entpName;
+  final String itemImage;
 
   MedicineModel({
     required this.pillId,
     required this.pillName,
-    required this.pillNameEng,
-    required this.detail,
+    this.pillNameEng,
+    this.detail,
     this.frontMarking,
     this.backMarking,
-    required this.shape,
-    required this.width,
-    required this.length,
-    required this.thick,
-    required this.entpName,
+    this.shape,
+    this.width,
+    this.length,
+    this.thick,
+    this.entpName,
+    required this.itemImage,
   });
 
   factory MedicineModel.fromJson(Map<String, dynamic> json) {
     return MedicineModel(
       pillId: json["pillId"] ?? '',
       pillName: json["pillName"] ?? '',
-      pillNameEng: json["pillNameEng"] ?? '',
-      detail: json["detail"] ?? '',
+      pillNameEng: json["pillNameEng"],
+      detail: json["detail"],
       frontMarking: json["frontMarking"],
       backMarking: json["backMarking"],
-      shape: json["shape"] ?? '',
-      width: json["width"] ?? '',
-      length: json["length"] ?? '',
-      thick: json["thick"] ?? '',
-      entpName: json["entpName"] ?? '',
+      shape: json["shape"],
+      width: json["width"],
+      length: json["length"],
+      thick: json["thick"],
+      entpName: json["entpName"],
+      itemImage: json["itemImage"] ?? '',
     );
   }
 }
 
 class ResultPage extends StatefulWidget {
   final String selectedId;
-  final String selectImage;
 
-  const ResultPage(
-      {super.key, required this.selectedId, required this.selectImage});
+  const ResultPage({super.key, required this.selectedId});
 
   @override
   ResultPageState createState() => ResultPageState();
@@ -74,6 +75,7 @@ class ResultPageState extends State<ResultPage> {
     length: '',
     thick: '',
     entpName: '',
+    itemImage: '',
   );
   bool inList = false;
 
@@ -108,6 +110,7 @@ class ResultPageState extends State<ResultPage> {
             length: '',
             thick: '',
             entpName: '',
+            itemImage: '',
           );
         }
       });
@@ -131,8 +134,8 @@ class ResultPageState extends State<ResultPage> {
       pillList.add(ResultListModel(
         pillId: medicine.pillId,
         pillName: medicine.pillName,
-        itemImage: widget.selectImage,
-        className: medicine.detail,
+        itemImage: medicine.itemImage,
+        className: medicine.detail ?? '',
       ));
     }
     await savePillList(pillList);
@@ -156,7 +159,6 @@ class ResultPageState extends State<ResultPage> {
                   BackBtnComponent(inList: inList, toggleInList: toggleInList),
                   ResultComponent(
                     medicine: medicine,
-                    selectImage: widget.selectImage,
                   )
                 ],
               ),
@@ -238,10 +240,8 @@ class BackBtnState extends State<BackBtnComponent> {
 
 class ResultComponent extends StatefulWidget {
   final MedicineModel medicine;
-  final String selectImage;
 
-  const ResultComponent(
-      {super.key, required this.medicine, required this.selectImage});
+  const ResultComponent({super.key, required this.medicine});
 
   @override
   ResultState createState() => ResultState();
@@ -305,7 +305,7 @@ class ResultState extends State<ResultComponent> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: widget.selectImage == ""
+                child: widget.medicine.itemImage == ""
                     ? Container(
                         width: 290,
                         height: 155,
@@ -319,7 +319,7 @@ class ResultState extends State<ResultComponent> {
                         ),
                       )
                     : Image.network(
-                        widget.selectImage,
+                        widget.medicine.itemImage,
                         width: 290,
                         height: 155,
                       ),
@@ -338,7 +338,12 @@ class ResultState extends State<ResultComponent> {
             ],
           ),
         ),
-        listContent('이름 ( 영문 )', widget.medicine.pillNameEng),
+        widget.medicine.pillNameEng != null
+            ? listContent('이름 ( 영문 )', "${widget.medicine.pillNameEng}")
+            : const SizedBox.shrink(),
+        widget.medicine.detail != null
+            ? listContent('효능', "${widget.medicine.detail}")
+            : const SizedBox.shrink(),
         widget.medicine.frontMarking == null &&
                 widget.medicine.backMarking != null
             ? listContent('식별표시 뒤', "${widget.medicine.backMarking}")
@@ -349,11 +354,17 @@ class ResultState extends State<ResultComponent> {
                         widget.medicine.backMarking != null
                     ? listContent('식별표시 앞 / 뒤',
                         "${widget.medicine.frontMarking} / ${widget.medicine.backMarking}")
-                    : const Column(),
-        listContent('외형', widget.medicine.detail),
-        listContent('길이 (가로, 세로, 두께) ( mm )',
-            "${widget.medicine.width} / ${widget.medicine.length} / ${widget.medicine.thick}"),
-        listContent('회사', widget.medicine.entpName),
+                    : const SizedBox.shrink(),
+        widget.medicine.shape != null
+            ? listContent('외형', "${widget.medicine.shape}")
+            : const SizedBox.shrink(),
+        widget.medicine.shape != null
+            ? listContent('길이 (가로, 세로, 두께) ( mm )',
+                "${widget.medicine.width} / ${widget.medicine.length} / ${widget.medicine.thick}")
+            : const SizedBox.shrink(),
+        widget.medicine.entpName != null
+            ? listContent('회사', "${widget.medicine.entpName}")
+            : const SizedBox.shrink(),
         const SizedBox(height: 20),
       ],
     );

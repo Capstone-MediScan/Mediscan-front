@@ -109,7 +109,6 @@ class ListState extends State<ListComponent> {
                   MaterialPageRoute(
                     builder: (context) => ResultPage(
                       selectedId: data.id,
-                      selectImage: '',
                     ),
                   ),
                 );

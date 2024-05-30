@@ -399,8 +399,8 @@ class ResultButtonState extends State<ResultButton> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ResultPage(
-                          selectedId: widget.selectedId,
-                          selectImage: widget.selectImage),
+                        selectedId: widget.selectedId,
+                      ),
                     ),
                   );
                 }
