@@ -103,7 +103,7 @@ class CapsuleSearchState extends State<CapsuleSearch> {
                   ),
                   const SizedBox(height: 50),
                   Text(
-                    '식별표시 앞 뒤 , 모양 , 색상을 모두 입력해 주세요.',
+                    '모양, 색상을 입력해 주세요.',
                     style: TextStyle(
                       fontFamily: 'NotoSans500',
                       fontSize: 12,
