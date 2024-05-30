@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mediscan/capsulelist.dart';
 import 'package:mediscan/capsulescan.dart';
 import 'package:mediscan/capsulesearch.dart';
@@ -9,7 +10,7 @@ import 'package:mediscan/alertmain.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 class ResultList {
-  final int id;
+  final String id;
   final int percent;
   final File? image;
   final String title;
@@ -24,8 +25,9 @@ class ResultList {
   });
 }
 
-void main() {
+Future<void> main() async {
   tz.initializeTimeZones();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -56,7 +58,6 @@ class RootState extends State<Root> {
     HomePage(),
     const CapsuleListPage(),
     const MediScanHome(),
-    const CapsuleListPage(),
   ];
 
   late List<GlobalKey<NavigatorState>> navigatorKeyList;
@@ -79,10 +80,20 @@ class RootState extends State<Root> {
           backgroundColor: whiteColor,
           scrolledUnderElevation: 0,
           toolbarHeight: 65,
-          title: const Text(
-            'MediScan',
-            style: TextStyle(
-                color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+          title: GestureDetector(
+            onTap: () {
+              setState(() {
+                currentIndex = 0;
+                navigatorKeyList[currentIndex]
+                    .currentState!
+                    .popUntil((route) => route.isFirst);
+              });
+            },
+            child: const Text(
+              'MediScan',
+              style: TextStyle(
+                  color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+            ),
           ),
         ),
         body: IndexedStack(
@@ -148,17 +159,6 @@ class RootState extends State<Root> {
                 width: 30,
               ),
             ),
-            BottomNavigationBarItem(
-              label: 'my',
-              icon: Image.asset(
-                'assets/images/my.png',
-                width: 30,
-              ),
-              activeIcon: Image.asset(
-                'assets/images/mySelected.png',
-                width: 30,
-              ),
-            )
           ],
         ),
       ),
@@ -169,35 +169,35 @@ class RootState extends State<Root> {
 class HomePage extends StatelessWidget {
   final List<ResultList> list = [
     ResultList(
-      id: 1,
+      id: "1",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램 (아토르바스타틴칼슘삼어찌고어라라라)',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 2,
+      id: "2",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램 (아토르 어찌구)',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 3,
+      id: "3",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 4,
+      id: "4",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 5,
+      id: "5",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램 (아토르 어찌구)',
@@ -389,6 +389,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                   MaterialPageRoute(
                     builder: (context) => ResultPage(
                       selectedId: data.id,
+                      selectImage: '',
                     ),
                   ),
                 );

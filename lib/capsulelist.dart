@@ -13,35 +13,35 @@ class CapsuleListPage extends StatefulWidget {
 class CapsuleListPageState extends State<CapsuleListPage> {
   List<ResultList> list = [
     ResultList(
-      id: 1,
+      id: "1",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램 (아토르바스타틴칼슘삼어찌고어라라라)',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 2,
+      id: "2",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램 (아토르 어찌구)',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 3,
+      id: "3",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 4,
+      id: "4",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램',
       description: '전립선비대증약',
     ),
     ResultList(
-      id: 5,
+      id: "5",
       percent: 67,
       image: null,
       title: '리피논정 80밀리그램 (아토르 어찌구)',
@@ -70,7 +70,7 @@ class CapsuleListPageState extends State<CapsuleListPage> {
 }
 
 class ResultList {
-  final int id;
+  final String id;
   final int percent;
   final File? image;
   final String title;
@@ -109,6 +109,7 @@ class ListState extends State<ListComponent> {
                   MaterialPageRoute(
                     builder: (context) => ResultPage(
                       selectedId: data.id,
+                      selectImage: '',
                     ),
                   ),
                 );

@@ -138,16 +138,16 @@ class ShapeComponent extends StatefulWidget {
 }
 
 class ShapeState extends State<ShapeComponent> {
-  final Map<String, String> buttonTexts = {
-    '원형': 'circle',
-    '타원형': 'ellipse',
-    '삼각형': 'triangle',
-    '사각형': 'square',
-    '오각형': 'pentagon',
-    '육각형': 'hexagon',
-    '팔각형': 'octagon',
-    '다이아몬드': 'diamond',
-    '기타': 'etc'
+  final Set<String> buttonTexts = {
+    '원형',
+    '타원형',
+    '삼각형',
+    '사각형',
+    '오각형',
+    '육각형',
+    '팔각형',
+    '반원형',
+    '기타'
   }; //알약 종류
 
   @override
@@ -179,11 +179,11 @@ class ShapeState extends State<ShapeComponent> {
           spacing: 10,
           runSpacing: 16,
           alignment: WrapAlignment.center,
-          children: buttonTexts.entries
+          children: buttonTexts
               .map(
-                (entry) => OutlinedButton(
+                (text) => OutlinedButton(
                   onPressed: () {
-                    widget.onShapeSelected(entry.value);
+                    widget.onShapeSelected(text);
                     if (widget.isWarning == true) {
                       widget.onWarningChanged(false);
                     }
@@ -191,9 +191,8 @@ class ShapeState extends State<ShapeComponent> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: widget.selectedShape == entry.value
-                        ? backColor
-                        : whiteColor,
+                    backgroundColor:
+                        widget.selectedShape == text ? backColor : whiteColor,
                     side: const BorderSide(color: backColor),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -204,10 +203,10 @@ class ShapeState extends State<ShapeComponent> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(minWidth: 48),
                     child: Text(
-                      entry.key,
+                      text,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: widget.selectedShape == entry.value
+                          color: widget.selectedShape == text
                               ? whiteColor
                               : blackColor,
                           fontFamily: 'NotoSans500',
