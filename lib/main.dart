@@ -58,7 +58,6 @@ class RootState extends State<Root> {
     HomePage(),
     const CapsuleListPage(),
     const MediScanHome(),
-    const CapsuleListPage(),
   ];
 
   late List<GlobalKey<NavigatorState>> navigatorKeyList;
@@ -81,10 +80,20 @@ class RootState extends State<Root> {
           backgroundColor: whiteColor,
           scrolledUnderElevation: 0,
           toolbarHeight: 65,
-          title: const Text(
-            'MediScan',
-            style: TextStyle(
-                color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+          title: GestureDetector(
+            onTap: () {
+              setState(() {
+                currentIndex = 0;
+                navigatorKeyList[currentIndex]
+                    .currentState!
+                    .popUntil((route) => route.isFirst);
+              });
+            },
+            child: const Text(
+              'MediScan',
+              style: TextStyle(
+                  color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+            ),
           ),
         ),
         body: IndexedStack(
@@ -150,17 +159,6 @@ class RootState extends State<Root> {
                 width: 30,
               ),
             ),
-            BottomNavigationBarItem(
-              label: 'my',
-              icon: Image.asset(
-                'assets/images/my.png',
-                width: 30,
-              ),
-              activeIcon: Image.asset(
-                'assets/images/mySelected.png',
-                width: 30,
-              ),
-            )
           ],
         ),
       ),
