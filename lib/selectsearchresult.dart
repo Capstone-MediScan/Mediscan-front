@@ -1,24 +1,38 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mediscan/capsulesearch.dart';
 import 'package:mediscan/result.dart';
 import 'package:mediscan/theme/colors.dart';
+import 'package:http/http.dart' as http;
 
-class ResultList {
-  final int id;
-  final File? image;
-  final String title;
-  final String description;
+class ResultListModel {
+  final String pillId;
+  final String pillName;
+  final String itemImage;
+  final String className;
 
-  ResultList({
-    required this.id,
-    this.image,
-    required this.title,
-    required this.description,
+  ResultListModel({
+    required this.pillId,
+    required this.pillName,
+    required this.itemImage,
+    required this.className,
   });
+
+  factory ResultListModel.fromJson(Map<String, dynamic> json) {
+    return ResultListModel(
+      pillId: json["pillId"] ?? '',
+      pillName: json["pillName"] ?? '',
+      itemImage: json["itemImage"] ?? '',
+      className: json["className"] ?? '',
+    );
+  }
 }
 
 class SelectSearchPage extends StatefulWidget {
-  const SelectSearchPage({super.key});
+  final SearchData searchData;
+
+  const SelectSearchPage({super.key, required this.searchData});
 
   @override
   SelectSearchPageState createState() => SelectSearchPageState();
@@ -26,40 +40,44 @@ class SelectSearchPage extends StatefulWidget {
 
 class SelectSearchPageState extends State<SelectSearchPage> {
   bool isWarning = false; //경고 색상 표시 여부
-  int selectedId = 0; //선택된 ID 값
+  String selectedId = ""; //선택된 ID 값
+  List<ResultListModel> searchResults = [];
 
-  List<ResultList> buttonTexts = [
-    ResultList(
-      id: 1,
-      image: null,
-      title: '리피논정 80밀리그램 (지토르 어쩌구저쩌구쏼쏼쏴로쌀)',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: 2,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: 3,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: 4,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: 5,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchSearchResults();
+  }
+
+  Future<void> fetchSearchResults() async {
+    String baseUrl =
+        '${dotenv.env['PROJECT_URL']}/pill/search?pillShape=${widget.searchData.selectedShape}&color=${widget.searchData.selectedColor}';
+
+    if (widget.searchData.frontMark.isNotEmpty) {
+      baseUrl += '&frontMarking=${widget.searchData.frontMark}';
+    }
+    if (widget.searchData.backMark.isNotEmpty) {
+      baseUrl += '&backMarking=${widget.searchData.backMark}';
+    }
+
+    final url = Uri.parse(baseUrl);
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final decodedResponse = utf8.decode(response.bodyBytes);
+      final jsonResponse = json.decode(decodedResponse);
+
+      setState(() {
+        if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
+          searchResults = (jsonResponse['data'] as List)
+              .map((data) => ResultListModel.fromJson(data))
+              .toList();
+        } else {
+          searchResults = [];
+        }
+      });
+    } else {}
+  }
 
   void setWarning(bool warning) {
     setState(() {
@@ -67,7 +85,7 @@ class SelectSearchPageState extends State<SelectSearchPage> {
     });
   }
 
-  void setCapsule(int id) {
+  void setCapsule(String id) {
     setState(() {
       selectedId = id;
     });
@@ -85,23 +103,28 @@ class SelectSearchPageState extends State<SelectSearchPage> {
                   PhotoComponent(
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
-                    selectImage: selectedId != 0
-                        ? buttonTexts
-                            .firstWhere((result) => result.id == selectedId)
-                            .image
-                        : null,
+                    selectImage: selectedId != ""
+                        ? searchResults
+                            .firstWhere((result) => result.pillId == selectedId)
+                            .itemImage
+                        : "",
                   ),
                   CapsuleSelect(
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
                     selectedId: selectedId,
                     onIdSelected: setCapsule,
-                    buttonTexts: buttonTexts,
+                    searchResults: searchResults,
                   ),
                   ResultButton(
                     selectedId: selectedId,
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
+                    selectImage: selectedId != ""
+                        ? searchResults
+                            .firstWhere((result) => result.pillId == selectedId)
+                            .itemImage
+                        : "",
                   )
                 ],
               ),
@@ -116,13 +139,13 @@ class SelectSearchPageState extends State<SelectSearchPage> {
 class PhotoComponent extends StatefulWidget {
   final bool isWarning;
   final Function(bool) onWarningChanged;
-  final File? selectImage;
+  final String selectImage;
 
   const PhotoComponent({
     super.key,
     required this.isWarning,
     required this.onWarningChanged,
-    this.selectImage,
+    required this.selectImage,
   });
 
   @override
@@ -168,18 +191,18 @@ class PhotoState extends State<PhotoComponent> {
         ),
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          widget.selectImage != null
+          widget.selectImage != ""
               ? SizedBox(
                   width: 290,
                   height: 155,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: widget.selectImage == null
+                    child: widget.selectImage == ""
                         ? null
                         : Container(
                             decoration: BoxDecoration(
                               image: DecorationImage(
-                                image: FileImage(widget.selectImage!),
+                                image: NetworkImage(widget.selectImage),
                                 fit: BoxFit.cover,
                               ),
                               border: Border.all(
@@ -221,11 +244,11 @@ class PhotoState extends State<PhotoComponent> {
 }
 
 class CapsuleSelect extends StatefulWidget {
-  final int selectedId;
-  final Function(int) onIdSelected;
+  final String selectedId;
+  final Function(String) onIdSelected;
   final bool isWarning;
   final Function(bool) onWarningChanged;
-  final List<ResultList> buttonTexts;
+  final List<ResultListModel> searchResults;
 
   const CapsuleSelect({
     super.key,
@@ -233,7 +256,7 @@ class CapsuleSelect extends StatefulWidget {
     required this.onIdSelected,
     required this.isWarning,
     required this.onWarningChanged,
-    required this.buttonTexts,
+    required this.searchResults,
   });
 
   @override
@@ -244,7 +267,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: widget.buttonTexts.map(
+      children: widget.searchResults.map(
         (data) {
           return Padding(
             padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
@@ -253,7 +276,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      widget.onIdSelected(data.id);
+                      widget.onIdSelected(data.pillId);
                       if (widget.isWarning == true) {
                         widget.onWarningChanged(false);
                       }
@@ -264,7 +287,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                       backgroundColor: whiteColor,
                       foregroundColor: whiteColor,
                       side: BorderSide(
-                          color: widget.selectedId == data.id
+                          color: widget.selectedId == data.pillId
                               ? mainColor
                               : subColor),
                       padding: const EdgeInsets.symmetric(
@@ -281,7 +304,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                           height: 40,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: data.image == null
+                            child: data.itemImage == ""
                                 ? Container(
                                     decoration: BoxDecoration(
                                       color: whiteColor,
@@ -292,8 +315,8 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   )
-                                : Image.file(
-                                    data.image!,
+                                : Image.network(
+                                    data.itemImage,
                                     fit: BoxFit.cover,
                                   ),
                           ),
@@ -307,7 +330,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                             SizedBox(
                               width: 230,
                               child: Text(
-                                data.title,
+                                data.pillName,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                     color: blackColor,
@@ -318,7 +341,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                             SizedBox(
                               width: 190,
                               child: Text(
-                                data.description,
+                                data.className,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                     color: backColor,
@@ -342,7 +365,8 @@ class CapsuleSelectState extends State<CapsuleSelect> {
 }
 
 class ResultButton extends StatefulWidget {
-  final int selectedId;
+  final String selectedId;
+  final String selectImage;
   final bool isWarning;
   final Function(bool) onWarningChanged;
 
@@ -351,6 +375,7 @@ class ResultButton extends StatefulWidget {
     required this.selectedId,
     required this.isWarning,
     required this.onWarningChanged,
+    required this.selectImage,
   });
 
   @override
@@ -367,14 +392,15 @@ class ResultButtonState extends State<ResultButton> {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                if (widget.selectedId == 0) {
+                if (widget.selectedId == "") {
                   widget.onWarningChanged(true);
                 } else {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ResultPage(selectedId: widget.selectedId),
+                      builder: (context) => ResultPage(
+                          selectedId: widget.selectedId,
+                          selectImage: widget.selectImage),
                     ),
                   );
                 }

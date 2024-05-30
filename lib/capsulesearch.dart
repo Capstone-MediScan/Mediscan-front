@@ -119,22 +119,20 @@ class CapsuleSearchState extends State<CapsuleSearch> {
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
                     onPressed: () {
-                      if (selectedShape == '' ||
-                          selectedColor == '' ||
-                          frontMark == '' ||
-                          backMark == '') {
+                      if (selectedShape == '' || selectedColor == '') {
                         setWarning(true);
                       } else {
-                        // ShapeData data = ShapeData(
-                        //   selectedShape: selectedShape,
-                        //   frontMark: frontMark,
-                        //   backMark: backMark,
-                        //   selectedColor: selectedColor,
-                        // );
+                        SearchData data = SearchData(
+                          selectedShape: selectedShape,
+                          frontMark: frontMark,
+                          backMark: backMark,
+                          selectedColor: selectedColor,
+                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SelectSearchPage(),
+                            builder: (context) =>
+                                SelectSearchPage(searchData: data),
                           ),
                         );
                       }
@@ -144,7 +142,6 @@ class CapsuleSearchState extends State<CapsuleSearch> {
               ),
             ),
           ),
-          Text('$selectedShape $frontMark $backMark $selectedColor'),
         ],
       ),
     );
@@ -257,16 +254,16 @@ class ShapeComponent extends StatefulWidget {
 }
 
 class ShapeState extends State<ShapeComponent> {
-  final Map<String, String> buttonTexts = {
-    '원형': 'circle',
-    '타원형': 'ellipse',
-    '삼각형': 'triangle',
-    '사각형': 'square',
-    '오각형': 'pentagon',
-    '육각형': 'hexagon',
-    '팔각형': 'octagon',
-    '다이아몬드': 'diamond',
-    '기타': 'etc'
+  final Set<String> buttonTexts = {
+    '원형',
+    '타원형',
+    '삼각형',
+    '사각형',
+    '오각형',
+    '육각형',
+    '팔각형',
+    '반원형',
+    '기타'
   }; //알약 종류
 
   @override
@@ -291,18 +288,17 @@ class ShapeState extends State<ShapeComponent> {
           spacing: 10,
           runSpacing: 16,
           alignment: WrapAlignment.center,
-          children: buttonTexts.entries
+          children: buttonTexts
               .map(
-                (entry) => OutlinedButton(
+                (text) => OutlinedButton(
                   onPressed: () {
-                    widget.onShapeSelected(entry.value);
+                    widget.onShapeSelected(text);
                   },
                   style: OutlinedButton.styleFrom(
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: widget.selectedShape == entry.value
-                        ? backColor
-                        : whiteColor,
+                    backgroundColor:
+                        widget.selectedShape == text ? backColor : whiteColor,
                     side: const BorderSide(color: backColor),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -313,10 +309,10 @@ class ShapeState extends State<ShapeComponent> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(minWidth: 48),
                     child: Text(
-                      entry.key,
+                      text,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: widget.selectedShape == entry.value
+                          color: widget.selectedShape == text
                               ? whiteColor
                               : blackColor,
                           fontFamily: 'NotoSans500',
@@ -349,21 +345,21 @@ class ColorComponent extends StatefulWidget {
 
 class ColorState extends State<ColorComponent> {
   final Map<String, String> buttonTexts = {
-    '#FFFFFF': '하양',
-    '#FFFB9B': '노랑',
-    '#F9C84B': '주황',
-    '#FFD2D2': '분홍',
-    '#FF6A6A': '빨강',
-    '#925700': '갈색',
-    '#D3FFA8': '연두',
-    '#84A674': '초록',
-    '#86E6EC': '청록',
-    '#609CE2': '파랑',
-    '#395CD7': '남색',
-    '#B25286': '자주',
-    '#FF079C': '보라',
-    '#B9B9B9': '회색',
-    '#000000': '검정',
+    '#FFFFFF': 'WHITE',
+    '#FFFB9B': 'YELLOW',
+    '#F9C84B': 'ORANGE',
+    '#FFD2D2': 'PINK',
+    '#FF6A6A': 'RED',
+    '#925700': 'BROWN',
+    '#D3FFA8': 'LIGHT_GREEN',
+    '#84A674': 'GREEN',
+    '#86E6EC': 'TEAL',
+    '#609CE2': 'BLUE',
+    '#395CD7': 'INDIGO',
+    '#B25286': 'RED_PURPLE',
+    '#FF079C': 'PURPLE',
+    '#B9B9B9': 'GRAY',
+    '#000000': 'BLACK',
   }; //알약 색상 종류
 
   @override
@@ -432,13 +428,13 @@ class ColorState extends State<ColorComponent> {
   }
 }
 
-class ShapeData {
+class SearchData {
   final String selectedShape; //선택한 알약 모양
   final String frontMark; //작성한 식별표시 앞
   final String backMark; //작성한 식별표시 뒤
   final String selectedColor; //선택한 알약 색상
 
-  ShapeData({
+  SearchData({
     required this.selectedShape,
     required this.frontMark,
     required this.backMark,

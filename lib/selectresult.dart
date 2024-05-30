@@ -1,21 +1,20 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mediscan/result.dart';
 import 'package:mediscan/theme/colors.dart';
 
-class ResultList {
-  final int id;
-  final int percent;
-  final File? image;
-  final String title;
-  final String description;
+class ResultListModel {
+  final String pillId;
+  final int confidence;
+  final String itemImage;
+  final String pillName;
+  final String className;
 
-  ResultList({
-    required this.id,
-    required this.percent,
-    this.image,
-    required this.title,
-    required this.description,
+  ResultListModel({
+    required this.pillId,
+    required this.confidence,
+    required this.itemImage,
+    required this.pillName,
+    required this.className,
   });
 }
 
@@ -28,43 +27,48 @@ class SelectPage extends StatefulWidget {
 
 class SelectPageState extends State<SelectPage> {
   bool isWarning = false; //경고 색상 표시 여부
-  int selectedId = 0; //선택된 ID 값
+  String selectedId = ""; //선택된 ID 값
 
-  List<ResultList> buttonTexts = [
-    ResultList(
-      id: 1,
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (지토르 어찌지)',
-      description: '전립선비대증약',
+  List<ResultListModel> scanResults = [
+    ResultListModel(
+      pillId: "1",
+      confidence: 67,
+      itemImage:
+          'https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/1OOrhdcAxCm',
+      pillName: '리피논정 80밀리그램 (지토르 어찌지)',
+      className: '전립선비대증약',
     ),
-    ResultList(
-      id: 2,
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
+    ResultListModel(
+      pillId: "2",
+      confidence: 67,
+      itemImage:
+          'https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/1OOrhdcAxCm',
+      pillName: '리피논정 80밀리그램 (지토르 어찌지)',
+      className: '전립선비대증약',
     ),
-    ResultList(
-      id: 3,
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
+    ResultListModel(
+      pillId: "3",
+      confidence: 67,
+      itemImage:
+          'https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/1OOrhdcAxCm',
+      pillName: '리피논정 80밀리그램 (지토르 어찌지)',
+      className: '전립선비대증약',
     ),
-    ResultList(
-      id: 4,
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
+    ResultListModel(
+      pillId: "4",
+      confidence: 67,
+      itemImage:
+          'https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/1OOrhdcAxCm',
+      pillName: '리피논정 80밀리그램 (지토르 어찌지)',
+      className: '전립선비대증약',
     ),
-    ResultList(
-      id: 5,
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
+    ResultListModel(
+      pillId: "5",
+      confidence: 67,
+      itemImage:
+          'https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/1OOrhdcAxCm',
+      pillName: '리피논정 80밀리그램 (지토르 어찌지)',
+      className: '전립선비대증약',
     ),
   ];
 
@@ -74,7 +78,7 @@ class SelectPageState extends State<SelectPage> {
     });
   }
 
-  void setCapsule(int id) {
+  void setCapsule(String id) {
     setState(() {
       selectedId = id;
     });
@@ -92,21 +96,26 @@ class SelectPageState extends State<SelectPage> {
                   PhotoComponent(
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
-                    selectImage: selectedId != 0
-                        ? buttonTexts
-                            .firstWhere((result) => result.id == selectedId)
-                            .image
-                        : null,
+                    selectImage: selectedId != ""
+                        ? scanResults
+                            .firstWhere((result) => result.pillId == selectedId)
+                            .itemImage
+                        : "",
                   ),
                   CapsuleSelect(
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
                     selectedId: selectedId,
                     onIdSelected: setCapsule,
-                    buttonTexts: buttonTexts,
+                    buttonTexts: scanResults,
                   ),
                   ResultButton(
                     selectedId: selectedId,
+                    selectImage: selectedId != ""
+                        ? scanResults
+                            .firstWhere((result) => result.pillId == selectedId)
+                            .itemImage
+                        : "",
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
                   )
@@ -123,13 +132,13 @@ class SelectPageState extends State<SelectPage> {
 class PhotoComponent extends StatefulWidget {
   final bool isWarning;
   final Function(bool) onWarningChanged;
-  final File? selectImage;
+  final String selectImage;
 
   const PhotoComponent({
     super.key,
     required this.isWarning,
     required this.onWarningChanged,
-    this.selectImage,
+    required this.selectImage,
   });
 
   @override
@@ -175,18 +184,18 @@ class PhotoState extends State<PhotoComponent> {
         ),
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          widget.selectImage != null
+          widget.selectImage != ""
               ? SizedBox(
                   width: 290,
                   height: 155,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: widget.selectImage == null
+                    child: widget.selectImage == ""
                         ? null
                         : Container(
                             decoration: BoxDecoration(
                               image: DecorationImage(
-                                image: FileImage(widget.selectImage!),
+                                image: NetworkImage(widget.selectImage),
                                 fit: BoxFit.cover,
                               ),
                               border: Border.all(
@@ -228,11 +237,11 @@ class PhotoState extends State<PhotoComponent> {
 }
 
 class CapsuleSelect extends StatefulWidget {
-  final int selectedId;
-  final Function(int) onIdSelected;
+  final String selectedId;
+  final Function(String) onIdSelected;
   final bool isWarning;
   final Function(bool) onWarningChanged;
-  final List<ResultList> buttonTexts;
+  final List<ResultListModel> buttonTexts;
 
   const CapsuleSelect({
     super.key,
@@ -260,7 +269,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      widget.onIdSelected(data.id);
+                      widget.onIdSelected(data.pillId);
                       if (widget.isWarning == true) {
                         widget.onWarningChanged(false);
                       }
@@ -271,7 +280,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                       backgroundColor: whiteColor,
                       foregroundColor: whiteColor,
                       side: BorderSide(
-                          color: widget.selectedId == data.id
+                          color: widget.selectedId == data.pillId
                               ? mainColor
                               : subColor),
                       padding: const EdgeInsets.symmetric(
@@ -284,7 +293,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          '${data.percent}%',
+                          '${data.confidence}%',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: mainColor,
@@ -299,7 +308,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                           height: 40,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: data.image == null
+                            child: data.itemImage == ""
                                 ? Container(
                                     decoration: BoxDecoration(
                                       color: whiteColor,
@@ -310,8 +319,8 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   )
-                                : Image.file(
-                                    data.image!,
+                                : Image.network(
+                                    data.itemImage,
                                     fit: BoxFit.cover,
                                   ),
                           ),
@@ -325,7 +334,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                             SizedBox(
                               width: 160,
                               child: Text(
-                                data.title,
+                                data.pillName,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                     color: blackColor,
@@ -336,7 +345,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                             SizedBox(
                               width: 160,
                               child: Text(
-                                data.description,
+                                data.className,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                     color: backColor,
@@ -360,7 +369,8 @@ class CapsuleSelectState extends State<CapsuleSelect> {
 }
 
 class ResultButton extends StatefulWidget {
-  final int selectedId;
+  final String selectedId;
+  final String selectImage;
   final bool isWarning;
   final Function(bool) onWarningChanged;
 
@@ -368,7 +378,8 @@ class ResultButton extends StatefulWidget {
       {super.key,
       required this.selectedId,
       required this.isWarning,
-      required this.onWarningChanged});
+      required this.onWarningChanged,
+      required this.selectImage});
 
   @override
   ResultButtonState createState() => ResultButtonState();
@@ -384,14 +395,16 @@ class ResultButtonState extends State<ResultButton> {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                if (widget.selectedId == 0) {
+                if (widget.selectedId == "") {
                   widget.onWarningChanged(true);
                 } else {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ResultPage(selectedId: widget.selectedId),
+                      builder: (context) => ResultPage(
+                        selectedId: widget.selectedId,
+                        selectImage: widget.selectImage,
+                      ),
                     ),
                   );
                 }

@@ -1,68 +1,120 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mediscan/theme/colors.dart';
+import 'package:http/http.dart' as http;
 
-class Medicine {
-  final int id;
-  final File? image;
-  final String title;
-  final String nameInEn;
-  final String efficacy;
-  final String frontMark;
-  final String backMark;
-  final String appearance;
-  final double width;
-  final double height;
-  final double thickness;
-  final String company;
-  bool inList;
+class MedicineModel {
+  final String pillId;
+  final String pillName;
+  final String pillNameEng;
+  final String detail;
+  final String? frontMarking;
+  final String? backMarking;
+  final String shape;
+  final String width;
+  final String length;
+  final String thick;
+  final String entpName;
 
-  Medicine({
-    required this.id,
-    this.image,
-    required this.title,
-    required this.nameInEn,
-    required this.efficacy,
-    required this.frontMark,
-    required this.backMark,
-    required this.appearance,
+  MedicineModel({
+    required this.pillId,
+    required this.pillName,
+    required this.pillNameEng,
+    required this.detail,
+    this.frontMarking,
+    this.backMarking,
+    required this.shape,
     required this.width,
-    required this.height,
-    required this.thickness,
-    required this.company,
-    required this.inList,
+    required this.length,
+    required this.thick,
+    required this.entpName,
   });
+
+  factory MedicineModel.fromJson(Map<String, dynamic> json) {
+    return MedicineModel(
+      pillId: json["pillId"] ?? '',
+      pillName: json["pillName"] ?? '',
+      pillNameEng: json["pillNameEng"] ?? '',
+      detail: json["detail"] ?? '',
+      frontMarking: json["frontMarking"],
+      backMarking: json["backMarking"],
+      shape: json["shape"] ?? '',
+      width: json["width"] ?? '',
+      length: json["length"] ?? '',
+      thick: json["thick"] ?? '',
+      entpName: json["entpName"] ?? '',
+    );
+  }
 }
 
 class ResultPage extends StatefulWidget {
-  final int selectedId;
+  final String selectedId;
+  final String selectImage;
 
-  const ResultPage({super.key, required this.selectedId});
+  const ResultPage(
+      {super.key, required this.selectedId, required this.selectImage});
 
   @override
   ResultPageState createState() => ResultPageState();
 }
 
 class ResultPageState extends State<ResultPage> {
-  Medicine medicine = Medicine(
-    id: 1,
-    image: null,
-    title: '리피논정 80밀리그램 (아토르바스타틴칼슘삼수화물)',
-    nameInEn: 'lipinon tablet 80mg (Atorvastatin calcium trihydrate)',
-    efficacy: '동맥경화용재',
-    frontMark: 'LPT',
-    backMark: '80',
-    appearance: '이 약은 흰색의 타원형 필름코팅정이다.',
-    width: 19.55,
-    height: 10.50,
-    thickness: 7.06,
-    company: '동아에스티 (주)',
-    inList: false,
+  MedicineModel medicine = MedicineModel(
+    pillId: '',
+    pillName: '',
+    pillNameEng: '',
+    detail: '',
+    frontMarking: '',
+    backMarking: '',
+    shape: '',
+    width: '',
+    length: '',
+    thick: '',
+    entpName: '',
   );
+  bool inList = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSearchResults();
+  }
+
+  Future<void> fetchSearchResults() async {
+    final url =
+        Uri.parse('${dotenv.env['PROJECT_URL']}/pill/${widget.selectedId}');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final decodedResponse = utf8.decode(response.bodyBytes);
+      final jsonResponse = json.decode(decodedResponse);
+
+      setState(() {
+        if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
+          medicine = MedicineModel.fromJson(jsonResponse['data']);
+        } else {
+          medicine = MedicineModel(
+            pillId: '',
+            pillName: '',
+            pillNameEng: '',
+            detail: '',
+            frontMarking: '',
+            backMarking: '',
+            shape: '',
+            width: '',
+            length: '',
+            thick: '',
+            entpName: '',
+          );
+        }
+      });
+    } else {}
+  }
 
   void toggleInList() {
     setState(() {
-      medicine.inList = !medicine.inList;
+      inList = !inList;
     });
   }
 
@@ -75,9 +127,11 @@ class ResultPageState extends State<ResultPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  BackBtnComponent(
-                      inList: medicine.inList, toggleInList: toggleInList),
-                  ResultComponent(medicine: medicine)
+                  BackBtnComponent(inList: inList, toggleInList: toggleInList),
+                  ResultComponent(
+                    medicine: medicine,
+                    selectImage: widget.selectImage,
+                  )
                 ],
               ),
             ),
@@ -157,9 +211,11 @@ class BackBtnState extends State<BackBtnComponent> {
 }
 
 class ResultComponent extends StatefulWidget {
-  final Medicine medicine;
+  final MedicineModel medicine;
+  final String selectImage;
 
-  const ResultComponent({super.key, required this.medicine});
+  const ResultComponent(
+      {super.key, required this.medicine, required this.selectImage});
 
   @override
   ResultState createState() => ResultState();
@@ -223,7 +279,7 @@ class ResultState extends State<ResultComponent> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: widget.medicine.image == null
+                child: widget.selectImage == ""
                     ? Container(
                         width: 290,
                         height: 155,
@@ -236,8 +292,8 @@ class ResultState extends State<ResultComponent> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       )
-                    : Image.file(
-                        widget.medicine.image!,
+                    : Image.network(
+                        widget.selectImage,
                         width: 290,
                         height: 155,
                       ),
@@ -245,7 +301,7 @@ class ResultState extends State<ResultComponent> {
               Padding(
                 padding: const EdgeInsets.only(top: 40, bottom: 40),
                 child: Text(
-                  widget.medicine.title,
+                  widget.medicine.pillName,
                   style: const TextStyle(
                     color: blackColor,
                     fontFamily: 'NotoSans900',
@@ -256,14 +312,22 @@ class ResultState extends State<ResultComponent> {
             ],
           ),
         ),
-        listContent('이름 ( 영문 )', widget.medicine.nameInEn),
-        listContent('효능', widget.medicine.efficacy),
-        listContent('식별표시 앞 / 뒤',
-            "${widget.medicine.frontMark} / ${widget.medicine.backMark}"),
-        listContent('외형', widget.medicine.appearance),
+        listContent('이름 ( 영문 )', widget.medicine.pillNameEng),
+        widget.medicine.frontMarking == null &&
+                widget.medicine.backMarking != null
+            ? listContent('식별표시 뒤', "${widget.medicine.backMarking}")
+            : widget.medicine.frontMarking != null &&
+                    widget.medicine.backMarking == null
+                ? listContent('식별표시 앞', "${widget.medicine.frontMarking}")
+                : widget.medicine.frontMarking != null &&
+                        widget.medicine.backMarking != null
+                    ? listContent('식별표시 앞 / 뒤',
+                        "${widget.medicine.frontMarking} / ${widget.medicine.backMarking}")
+                    : const Column(),
+        listContent('외형', widget.medicine.detail),
         listContent('길이 (가로, 세로, 두께) ( mm )',
-            "${widget.medicine.width} / ${widget.medicine.height} / ${widget.medicine.thickness}"),
-        listContent('회사', widget.medicine.company),
+            "${widget.medicine.width} / ${widget.medicine.length} / ${widget.medicine.thick}"),
+        listContent('회사', widget.medicine.entpName),
         const SizedBox(height: 20),
       ],
     );
