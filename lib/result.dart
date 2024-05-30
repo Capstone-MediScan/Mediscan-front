@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mediscan/data.dart';
+import 'package:mediscan/main.dart';
 import 'package:mediscan/theme/colors.dart';
 import 'package:http/http.dart' as http;
 
@@ -109,7 +111,31 @@ class ResultPageState extends State<ResultPage> {
           );
         }
       });
+      recentSearchPill();
     } else {}
+  }
+
+  Future<void> recentSearchPill() async {
+    List<ResultListModel> pillList = await loadPillList();
+
+    int existingIndex =
+        pillList.indexWhere((pill) => pill.pillId == medicine.pillId);
+
+    if (existingIndex != -1) {
+      ResultListModel existingPill = pillList.removeAt(existingIndex);
+      pillList.add(existingPill);
+    } else {
+      if (pillList.length >= 5) {
+        pillList.removeAt(0);
+      }
+      pillList.add(ResultListModel(
+        pillId: medicine.pillId,
+        pillName: medicine.pillName,
+        itemImage: widget.selectImage,
+        className: medicine.detail,
+      ));
+    }
+    await savePillList(pillList);
   }
 
   void toggleInList() {
