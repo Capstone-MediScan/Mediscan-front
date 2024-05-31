@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mediscan/main.dart';
 import 'package:mediscan/selectsearchresult.dart';
 import 'package:mediscan/theme/colors.dart';
+import 'package:http/http.dart' as http;
 
 class CapsuleSearch extends StatefulWidget {
   const CapsuleSearch({super.key});
@@ -44,6 +49,62 @@ class CapsuleSearchState extends State<CapsuleSearch> {
     setState(() {
       isWarning = warning;
     });
+  }
+
+  Future<List<ResultListModel>> fetchSearchResults() async {
+    String baseUrl =
+        '${dotenv.env['PROJECT_URL']}/pill/search?pillShape=$selectedShape&color=$selectedColor';
+
+    if (frontMark.isNotEmpty) {
+      baseUrl += '&frontMarking=$frontMark';
+    }
+    if (backMark.isNotEmpty) {
+      baseUrl += '&backMarking=$backMark';
+    }
+
+    final url = Uri.parse(baseUrl);
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final decodedResponse = utf8.decode(response.bodyBytes);
+      final jsonResponse = json.decode(decodedResponse);
+
+      if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
+        return (jsonResponse['data'] as List)
+            .map((data) => ResultListModel.fromJson(data))
+            .toList();
+      } else {
+        return [];
+      }
+    } else {
+      return [];
+    }
+  }
+
+  void onSearchPressed() async {
+    if (selectedShape == '' || selectedColor == '') {
+      setWarning(true);
+    } else {
+      setWarning(false);
+      List<ResultListModel> searchResults = await fetchSearchResults();
+      if (mounted) {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                SelectSearchPage(
+              searchResults: searchResults,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+            opaque: false,
+            barrierColor: Colors.transparent,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -118,25 +179,7 @@ class CapsuleSearchState extends State<CapsuleSearch> {
                     selectedColor: selectedColor,
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
-                    onPressed: () {
-                      if (selectedShape == '' || selectedColor == '') {
-                        setWarning(true);
-                      } else {
-                        SearchData data = SearchData(
-                          selectedShape: selectedShape,
-                          frontMark: frontMark,
-                          backMark: backMark,
-                          selectedColor: selectedColor,
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                SelectSearchPage(searchData: data),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: onSearchPressed,
                   )
                 ],
               ),

@@ -400,10 +400,17 @@ class ResultButtonState extends State<ResultButton> {
                 } else {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ResultPage(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          ResultPage(
                         selectedId: widget.selectedId,
                       ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                      opaque: false,
+                      barrierColor: Colors.transparent,
                     ),
                   );
                 }

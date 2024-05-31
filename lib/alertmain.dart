@@ -106,12 +106,19 @@ class MediScanHomeState extends State<MediScanHome> {
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => AlertSetting(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      AlertSetting(
                     initialTime:
                         const TimeOfDay(hour: 12, minute: 0), // const 추가
                     daysStatus: List.filled(7, false), // 예시로 모든 요일을 false로 초기화
                   ),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return child;
+                  },
+                  opaque: false,
+                  barrierColor: Colors.transparent,
                 ),
               );
               if (result != null && result['action'] == 'save') {
@@ -162,12 +169,20 @@ class MediScanHomeState extends State<MediScanHome> {
                         );
                         final result = await Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => AlertSetting(
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    AlertSetting(
                               initialTime: timeOfDay,
                               daysStatus: List.filled(7, false),
                               alertIndex: index,
                             ),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return child;
+                            },
+                            opaque: false,
+                            barrierColor: Colors.transparent,
                           ),
                         );
                         if (result != null) {

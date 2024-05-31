@@ -120,8 +120,15 @@ class UploadPageState extends State<UploadPage> {
                     */
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const SelectPage(),
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const SelectPage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return child;
+                        },
+                        opaque: false,
+                        barrierColor: Colors.transparent,
                       ),
                     );
                   }

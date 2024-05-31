@@ -130,8 +130,14 @@ class RootState extends State<Root> {
             return Navigator(
               key: navigatorKeyList[index],
               onGenerateRoute: (_) {
-                return MaterialPageRoute(
-                  builder: (context) => page,
+                return PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => page,
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return child;
+                  },
+                  opaque: false,
+                  barrierColor: Colors.transparent,
                   settings: RouteSettings(
                     arguments: CustomNavigatorObserver(
                       onPop: handlePopEvent,
@@ -281,8 +287,15 @@ class PageBtnState extends State<PageBtnComponent> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => destinationWidgetBuilder(),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      destinationWidgetBuilder(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return child;
+                  },
+                  opaque: false,
+                  barrierColor: Colors.transparent,
                 ),
               );
               HomePage.globalKey.currentState?.refresh();
@@ -419,10 +432,17 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ResultPage(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        ResultPage(
                       selectedId: data.pillId,
                     ),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      return child;
+                    },
+                    opaque: false,
+                    barrierColor: Colors.transparent,
                   ),
                 );
               },

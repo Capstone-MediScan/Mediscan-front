@@ -106,10 +106,17 @@ class ListState extends State<ListComponent> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ResultPage(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        ResultPage(
                       selectedId: data.id,
                     ),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      return child;
+                    },
+                    opaque: false,
+                    barrierColor: Colors.transparent,
                   ),
                 );
               },

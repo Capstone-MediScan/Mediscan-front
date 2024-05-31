@@ -104,8 +104,15 @@ class CapsuleScanState extends State<CapsuleScan> {
                     );
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => UploadPage(shapeData: data),
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            UploadPage(shapeData: data),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return child;
+                        },
+                        opaque: false,
+                        barrierColor: Colors.transparent,
                       ),
                     );
                   }
