@@ -71,7 +71,6 @@ class Root extends StatefulWidget {
 class RootState extends State<Root> {
   int currentIndex = 0;
   late List<GlobalKey<NavigatorState>> navigatorKeyList;
-
   final List<Widget> pages = [];
 
   @override
@@ -80,7 +79,7 @@ class RootState extends State<Root> {
     navigatorKeyList = List.generate(3, (index) => GlobalKey<NavigatorState>());
     pages.addAll([
       HomePage(key: HomePage.globalKey),
-      const CapsuleListPage(),
+      CapsuleListPage(key: CapsuleListPage.globalKey),
       const MediScanHome(),
     ]);
   }
@@ -98,6 +97,8 @@ class RootState extends State<Root> {
   void handlePopEvent() {
     if (currentIndex == 0) {
       HomePage.globalKey.currentState?.refresh();
+    } else if (currentIndex == 1) {
+      CapsuleListPage.globalKey.currentState?.refresh();
     }
   }
 
@@ -164,6 +165,9 @@ class RootState extends State<Root> {
           onTap: (index) {
             setState(() {
               currentIndex = index;
+              if (currentIndex == 1) {
+                CapsuleListPage.globalKey.currentState?.refresh();
+              }
             });
           },
           items: [
@@ -222,12 +226,12 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    loadPillLists = loadPillList();
+    loadPillLists = loadPillList("recentList");
   }
 
   Future<void> refresh() async {
     setState(() {
-      loadPillLists = loadPillList();
+      loadPillLists = loadPillList("recentList");
     });
   }
 
@@ -421,6 +425,25 @@ class RecentSearchListComponent extends StatefulWidget {
 }
 
 class RecentSearchListState extends State<RecentSearchListComponent> {
+  void onResultPage(String selectedId) async {
+    MedicineModel? medicine = await fetchSearchResult(selectedId);
+    bool inList = await alreadyPillList(selectedId);
+    if (mounted) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ResultPage(medicine: medicine, inList: inList),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+          opaque: false,
+          barrierColor: Colors.transparent,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -430,21 +453,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
             padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        ResultPage(
-                      selectedId: data.pillId,
-                    ),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                      return child;
-                    },
-                    opaque: false,
-                    barrierColor: Colors.transparent,
-                  ),
-                );
+                onResultPage(data.pillId);
               },
               child: Row(
                 children: [

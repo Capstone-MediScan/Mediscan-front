@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mediscan/data.dart';
 import 'package:mediscan/main.dart';
 import 'package:mediscan/theme/colors.dart';
-import 'package:http/http.dart' as http;
 
 class MedicineModel {
   final String pillId;
@@ -54,94 +51,66 @@ class MedicineModel {
 }
 
 class ResultPage extends StatefulWidget {
-  final String selectedId;
+  final MedicineModel medicine;
+  final bool inList;
 
-  const ResultPage({super.key, required this.selectedId});
+  const ResultPage({super.key, required this.medicine, required this.inList});
 
   @override
   ResultPageState createState() => ResultPageState();
 }
 
 class ResultPageState extends State<ResultPage> {
-  MedicineModel medicine = MedicineModel(
-    pillId: '',
-    pillName: '',
-    pillNameEng: '',
-    detail: '',
-    frontMarking: '',
-    backMarking: '',
-    shape: '',
-    width: '',
-    length: '',
-    thick: '',
-    entpName: '',
-    itemImage: '',
-  );
-  bool inList = false;
+  late bool inList;
 
   @override
   void initState() {
     super.initState();
-    fetchSearchResults();
-  }
-
-  Future<void> fetchSearchResults() async {
-    final url =
-        Uri.parse('${dotenv.env['PROJECT_URL']}/pill/${widget.selectedId}');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final decodedResponse = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedResponse);
-
-      setState(() {
-        if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
-          medicine = MedicineModel.fromJson(jsonResponse['data']);
-        } else {
-          medicine = MedicineModel(
-            pillId: '',
-            pillName: '',
-            pillNameEng: '',
-            detail: '',
-            frontMarking: '',
-            backMarking: '',
-            shape: '',
-            width: '',
-            length: '',
-            thick: '',
-            entpName: '',
-            itemImage: '',
-          );
-        }
-      });
-      recentSearchPill();
-    } else {}
+    inList = widget.inList;
+    recentSearchPill();
   }
 
   Future<void> recentSearchPill() async {
-    List<ResultListModel> pillList = await loadPillList();
+    List<ResultListModel> recentList = await loadPillList("recentList");
 
     int existingIndex =
-        pillList.indexWhere((pill) => pill.pillId == medicine.pillId);
+        recentList.indexWhere((pill) => pill.pillId == widget.medicine.pillId);
 
     if (existingIndex != -1) {
-      ResultListModel existingPill = pillList.removeAt(existingIndex);
-      pillList.add(existingPill);
+      ResultListModel existingPill = recentList.removeAt(existingIndex);
+      recentList.add(existingPill);
     } else {
-      if (pillList.length >= 5) {
-        pillList.removeAt(0);
+      if (recentList.length >= 5) {
+        recentList.removeAt(0);
       }
-      pillList.add(ResultListModel(
-        pillId: medicine.pillId,
-        pillName: medicine.pillName,
-        itemImage: medicine.itemImage,
-        className: medicine.detail ?? '',
+      recentList.add(ResultListModel(
+        pillId: widget.medicine.pillId,
+        pillName: widget.medicine.pillName,
+        itemImage: widget.medicine.itemImage,
+        className: widget.medicine.detail ?? '',
       ));
     }
-    await savePillList(pillList);
+    await savePillList(recentList, "recentList");
   }
 
-  void toggleInList() {
+  Future<void> addPillList() async {
+    List<ResultListModel> addList = await loadPillList("addList");
+
+    int existingIndex =
+        addList.indexWhere((pill) => pill.pillId == widget.medicine.pillId);
+
+    if (existingIndex != -1) {
+      addList.removeAt(existingIndex);
+    } else {
+      addList.add(ResultListModel(
+        pillId: widget.medicine.pillId,
+        pillName: widget.medicine.pillName,
+        itemImage: widget.medicine.itemImage,
+        className: widget.medicine.detail ?? '',
+      ));
+    }
+    await savePillList(addList, "addList");
+
     setState(() {
       inList = !inList;
     });
@@ -156,9 +125,10 @@ class ResultPageState extends State<ResultPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  BackBtnComponent(inList: inList, toggleInList: toggleInList),
+                  BackBtnComponent(
+                      inList: inList, addPillList: addPillList),
                   ResultComponent(
-                    medicine: medicine,
+                    medicine: widget.medicine,
                   )
                 ],
               ),
@@ -172,10 +142,10 @@ class ResultPageState extends State<ResultPage> {
 
 class BackBtnComponent extends StatefulWidget {
   final bool inList;
-  final VoidCallback toggleInList;
+  final Future<void> Function() addPillList;
 
   const BackBtnComponent(
-      {super.key, required this.inList, required this.toggleInList});
+      {super.key, required this.inList, required this.addPillList});
 
   @override
   BackBtnState createState() => BackBtnState();
@@ -204,11 +174,7 @@ class BackBtnState extends State<BackBtnComponent> {
                   highlightColor: Colors.transparent,
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      widget.toggleInList();
-                    });
-                  },
+                  onPressed: widget.addPillList,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.inList ? deleteColor : mainColor,
                     foregroundColor: widget.inList ? deleteColor : mainColor,

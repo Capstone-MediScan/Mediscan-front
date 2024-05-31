@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mediscan/data.dart';
 import 'package:mediscan/result.dart';
 import 'package:mediscan/theme/colors.dart';
 
@@ -386,6 +387,30 @@ class ResultButton extends StatefulWidget {
 }
 
 class ResultButtonState extends State<ResultButton> {
+  void onResultPage() async {
+    if (widget.selectedId == "") {
+      widget.onWarningChanged(true);
+    } else {
+      MedicineModel? medicine = await fetchSearchResult(widget.selectedId);
+      bool inList = await alreadyPillList(widget.selectedId);
+      if (mounted) {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ResultPage(medicine: medicine, inList: inList),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+            opaque: false,
+            barrierColor: Colors.transparent,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -394,27 +419,7 @@ class ResultButtonState extends State<ResultButton> {
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: () {
-                if (widget.selectedId == "") {
-                  widget.onWarningChanged(true);
-                } else {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          ResultPage(
-                        selectedId: widget.selectedId,
-                      ),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
-                      opaque: false,
-                      barrierColor: Colors.transparent,
-                    ),
-                  );
-                }
-              },
+              onPressed: onResultPage,
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainColor,
                 padding: const EdgeInsets.symmetric(vertical: 13),

@@ -1,53 +1,33 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mediscan/data.dart';
+import 'package:mediscan/main.dart';
 import 'package:mediscan/result.dart';
 import 'package:mediscan/theme/colors.dart';
 
 class CapsuleListPage extends StatefulWidget {
   const CapsuleListPage({super.key});
 
+  static final GlobalKey<CapsuleListPageState> globalKey = GlobalKey();
+
   @override
   CapsuleListPageState createState() => CapsuleListPageState();
 }
 
 class CapsuleListPageState extends State<CapsuleListPage> {
-  List<ResultList> list = [
-    ResultList(
-      id: "1",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르바스타틴칼슘삼어찌고어라라라)',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "2",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "3",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "4",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "5",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
-    ),
-  ];
+  late Future<List<ResultListModel>> addPillLists;
+
+  @override
+  void initState() {
+    super.initState();
+    addPillLists = loadPillList("addList");
+  }
+
+  Future<void> refresh() async {
+    setState(() {
+      addPillLists = loadPillList("addList");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +35,30 @@ class CapsuleListPageState extends State<CapsuleListPage> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  ListComponent(list: list),
-                ],
-              ),
+            child: FutureBuilder<List<ResultListModel>>(
+              future: addPillLists,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                } else {
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ListComponent(list: snapshot.data!),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
             ),
           ),
         ],
@@ -86,7 +84,7 @@ class ResultList {
 }
 
 class ListComponent extends StatefulWidget {
-  final List<ResultList> list;
+  final List<ResultListModel> list;
 
   const ListComponent({super.key, required this.list});
 
@@ -95,6 +93,25 @@ class ListComponent extends StatefulWidget {
 }
 
 class ListState extends State<ListComponent> {
+  void onResultPage(String selectedId) async {
+    MedicineModel? medicine = await fetchSearchResult(selectedId);
+    bool inList = await alreadyPillList(selectedId);
+    if (mounted) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ResultPage(medicine: medicine, inList: inList),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+          opaque: false,
+          barrierColor: Colors.transparent,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -104,21 +121,7 @@ class ListState extends State<ListComponent> {
             padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        ResultPage(
-                      selectedId: data.id,
-                    ),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                      return child;
-                    },
-                    opaque: false,
-                    barrierColor: Colors.transparent,
-                  ),
-                );
+                onResultPage(data.pillId);
               },
               child: Row(
                 children: [
@@ -127,7 +130,7 @@ class ListState extends State<ListComponent> {
                     height: 50,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: data.image == null
+                      child: data.itemImage == ""
                           ? Container(
                               decoration: BoxDecoration(
                                 color: whiteColor,
@@ -138,8 +141,8 @@ class ListState extends State<ListComponent> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             )
-                          : Image.file(
-                              data.image!,
+                          : Image.network(
+                              data.itemImage,
                               fit: BoxFit.cover,
                             ),
                     ),
@@ -153,7 +156,7 @@ class ListState extends State<ListComponent> {
                       SizedBox(
                         width: 250,
                         child: Text(
-                          data.title,
+                          data.pillName,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: blackColor,
@@ -166,7 +169,7 @@ class ListState extends State<ListComponent> {
                       SizedBox(
                         width: 250,
                         child: Text(
-                          data.description,
+                          data.className,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: backColor,
