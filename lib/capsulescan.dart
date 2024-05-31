@@ -95,7 +95,7 @@ class CapsuleScanState extends State<CapsuleScan> {
                   if (selectedShape == '') {
                     setWarning(true);
                   } else {
-                    ShapeData data = ShapeData(
+                    UploadShapeData data = UploadShapeData(
                       selectedShape: selectedShape,
                       frontMark: frontMark,
                       backMark: backMark,
@@ -128,10 +128,10 @@ class ShapeComponent extends StatefulWidget {
 
   const ShapeComponent(
       {super.key,
-      required this.selectedShape,
-      required this.onShapeSelected,
-      required this.isWarning,
-      required this.onWarningChanged});
+        required this.selectedShape,
+        required this.onShapeSelected,
+        required this.isWarning,
+        required this.onWarningChanged});
 
   @override
   ShapeState createState() => ShapeState();
@@ -182,39 +182,39 @@ class ShapeState extends State<ShapeComponent> {
           children: buttonTexts
               .map(
                 (text) => OutlinedButton(
-                  onPressed: () {
-                    widget.onShapeSelected(text);
-                    if (widget.isWarning == true) {
-                      widget.onWarningChanged(false);
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor:
-                        widget.selectedShape == text ? backColor : whiteColor,
-                    side: const BorderSide(color: backColor),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 48),
-                    child: Text(
-                      text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: widget.selectedShape == text
-                              ? whiteColor
-                              : blackColor,
-                          fontFamily: 'NotoSans500',
-                          fontSize: 14),
-                    ),
-                  ),
+              onPressed: () {
+                widget.onShapeSelected(text);
+                if (widget.isWarning == true) {
+                  widget.onWarningChanged(false);
+                }
+              },
+              style: OutlinedButton.styleFrom(
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor:
+                widget.selectedShape == text ? backColor : whiteColor,
+                side: const BorderSide(color: backColor),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              )
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 48),
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: widget.selectedShape == text
+                          ? whiteColor
+                          : blackColor,
+                      fontFamily: 'NotoSans500',
+                      fontSize: 14),
+                ),
+              ),
+            ),
+          )
               .toList(),
         ),
       ],
@@ -231,10 +231,10 @@ class MarkComponent extends StatefulWidget {
 
   const MarkComponent(
       {super.key,
-      required this.frontMark,
-      required this.backMark,
-      required this.onFrontMarkChanged,
-      required this.onBackMarkChanged});
+        required this.frontMark,
+        required this.backMark,
+        required this.onFrontMarkChanged,
+        required this.onBackMarkChanged});
 
   @override
   MarkState createState() => MarkState();
@@ -288,7 +288,7 @@ class MarkState extends State<MarkComponent> {
                 filled: true,
                 fillColor: inputColor,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               ),
               style: const TextStyle(
                 fontFamily: 'NotoSans500',
