@@ -1,28 +1,45 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mediscan/capsulelist.dart';
 import 'package:mediscan/capsulescan.dart';
 import 'package:mediscan/capsulesearch.dart';
+import 'package:mediscan/custom.dart';
+import 'package:mediscan/data.dart';
 import 'package:mediscan/result.dart';
 import 'package:mediscan/theme/colors.dart';
 import 'package:mediscan/alertmain.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
-class ResultList {
-  final String id;
-  final int percent;
-  final File? image;
-  final String title;
-  final String description;
+class ResultListModel {
+  final String pillId;
+  final String pillName;
+  final String itemImage;
+  final String className;
 
-  ResultList({
-    required this.id,
-    required this.percent,
-    this.image,
-    required this.title,
-    required this.description,
+  ResultListModel({
+    required this.pillId,
+    required this.pillName,
+    required this.itemImage,
+    required this.className,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pillId': pillId,
+      'pillName': pillName,
+      'itemImage': itemImage,
+      'className': className,
+    };
+  }
+
+  factory ResultListModel.fromJson(Map<String, dynamic> json) {
+    return ResultListModel(
+      pillId: json["pillId"] ?? '',
+      pillName: json["pillName"] ?? '',
+      itemImage: json["itemImage"] ?? '',
+      className: json["className"] ?? '',
+    );
+  }
 }
 
 Future<void> main() async {
@@ -53,20 +70,36 @@ class Root extends StatefulWidget {
 
 class RootState extends State<Root> {
   int currentIndex = 0;
-
-  final List<Widget> pages = [
-    HomePage(),
-    const CapsuleListPage(),
-    const MediScanHome(),
-  ];
-
   late List<GlobalKey<NavigatorState>> navigatorKeyList;
+  final List<Widget> pages = [];
 
   @override
   void initState() {
     super.initState();
-    navigatorKeyList =
-        List.generate(pages.length, (index) => GlobalKey<NavigatorState>());
+    navigatorKeyList = List.generate(3, (index) => GlobalKey<NavigatorState>());
+    pages.addAll([
+      HomePage(key: HomePage.globalKey),
+      CapsuleListPage(key: CapsuleListPage.globalKey),
+      const MediScanHome(),
+    ]);
+  }
+
+  void reloadPillList() {
+    setState(() {
+      currentIndex = 0;
+      navigatorKeyList[currentIndex]
+          .currentState!
+          .popUntil((route) => route.isFirst);
+      HomePage.globalKey.currentState?.refresh();
+    });
+  }
+
+  void handlePopEvent() {
+    if (currentIndex == 0) {
+      HomePage.globalKey.currentState?.refresh();
+    } else if (currentIndex == 1) {
+      CapsuleListPage.globalKey.currentState?.refresh();
+    }
   }
 
   @override
@@ -82,12 +115,7 @@ class RootState extends State<Root> {
           toolbarHeight: 65,
           title: GestureDetector(
             onTap: () {
-              setState(() {
-                currentIndex = 0;
-                navigatorKeyList[currentIndex]
-                    .currentState!
-                    .popUntil((route) => route.isFirst);
-              });
+              reloadPillList();
             },
             child: const Text(
               'MediScan',
@@ -103,8 +131,22 @@ class RootState extends State<Root> {
             return Navigator(
               key: navigatorKeyList[index],
               onGenerateRoute: (_) {
-                return MaterialPageRoute(builder: (context) => page);
+                return PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => page,
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return child;
+                  },
+                  opaque: false,
+                  barrierColor: Colors.transparent,
+                  settings: RouteSettings(
+                    arguments: CustomNavigatorObserver(
+                      onPop: handlePopEvent,
+                    ),
+                  ),
+                );
               },
+              observers: [CustomNavigatorObserver(onPop: handlePopEvent)],
             );
           }).toList(),
         ),
@@ -123,6 +165,9 @@ class RootState extends State<Root> {
           onTap: (index) {
             setState(() {
               currentIndex = index;
+              if (currentIndex == 1) {
+                CapsuleListPage.globalKey.currentState?.refresh();
+              }
             });
           },
           items: [
@@ -166,63 +211,60 @@ class RootState extends State<Root> {
   }
 }
 
-class HomePage extends StatelessWidget {
-  final List<ResultList> list = [
-    ResultList(
-      id: "1",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르바스타틴칼슘삼어찌고어라라라)',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "2",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "3",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "4",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램',
-      description: '전립선비대증약',
-    ),
-    ResultList(
-      id: "5",
-      percent: 67,
-      image: null,
-      title: '리피논정 80밀리그램 (아토르 어찌구)',
-      description: '전립선비대증약',
-    ),
-  ];
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
-  HomePage({super.key});
+  static final GlobalKey<HomePageState> globalKey = GlobalKey();
+
+  @override
+  HomePageState createState() => HomePageState();
+}
+
+class HomePageState extends State<HomePage> {
+  late Future<List<ResultListModel>> loadPillLists;
+
+  @override
+  void initState() {
+    super.initState();
+    loadPillLists = loadPillList("recentList");
+  }
+
+  Future<void> refresh() async {
+    setState(() {
+      loadPillLists = loadPillList("recentList");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(children: [
-              const PageBtnComponent(),
-              const SizedBox(height: 87),
-              const RecentSearchComponent(),
-              RecentSearchListComponent(list: list),
-              const SizedBox(height: 30),
-            ]),
-          ),
-        ),
-      ],
+    return RefreshIndicator(
+      onRefresh: refresh,
+      child: FutureBuilder<List<ResultListModel>>(
+        future: loadPillLists,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else {
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  const PageBtnComponent(),
+                  const SizedBox(height: 87),
+                  const RecentSearchComponent(),
+                  RecentSearchListComponent(list: snapshot.data ?? []),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }
@@ -249,10 +291,18 @@ class PageBtnState extends State<PageBtnComponent> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => destinationWidgetBuilder(),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      destinationWidgetBuilder(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return child;
+                  },
+                  opaque: false,
+                  barrierColor: Colors.transparent,
                 ),
               );
+              HomePage.globalKey.currentState?.refresh();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: subColor,
@@ -366,7 +416,7 @@ class RecentSearchState extends State<RecentSearchComponent> {
 }
 
 class RecentSearchListComponent extends StatefulWidget {
-  final List<ResultList> list;
+  final List<ResultListModel> list;
 
   const RecentSearchListComponent({super.key, required this.list});
 
@@ -375,24 +425,35 @@ class RecentSearchListComponent extends StatefulWidget {
 }
 
 class RecentSearchListState extends State<RecentSearchListComponent> {
+  void onResultPage(String selectedId) async {
+    MedicineModel? medicine = await fetchSearchResult(selectedId);
+    bool inList = await alreadyPillList(selectedId);
+    if (mounted) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ResultPage(medicine: medicine, inList: inList),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+          opaque: false,
+          barrierColor: Colors.transparent,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: widget.list.map(
+      children: widget.list.reversed.map(
         (data) {
           return Padding(
             padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ResultPage(
-                      selectedId: data.id,
-                      selectImage: '',
-                    ),
-                  ),
-                );
+                onResultPage(data.pillId);
               },
               child: Row(
                 children: [
@@ -401,7 +462,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                     height: 50,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: data.image == null
+                      child: data.itemImage == ""
                           ? Container(
                               decoration: BoxDecoration(
                                 color: whiteColor,
@@ -412,8 +473,8 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             )
-                          : Image.file(
-                              data.image!,
+                          : Image.network(
+                              data.itemImage,
                               fit: BoxFit.cover,
                             ),
                     ),
@@ -427,7 +488,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                       SizedBox(
                         width: 250,
                         child: Text(
-                          data.title,
+                          data.pillName,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: blackColor,
@@ -440,7 +501,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                       SizedBox(
                         width: 250,
                         child: Text(
-                          data.description,
+                          data.className,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: backColor,

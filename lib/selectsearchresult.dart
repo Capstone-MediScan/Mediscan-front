@@ -1,38 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mediscan/capsulesearch.dart';
+import 'package:mediscan/data.dart';
+import 'package:mediscan/main.dart';
 import 'package:mediscan/result.dart';
 import 'package:mediscan/theme/colors.dart';
-import 'package:http/http.dart' as http;
-
-class ResultListModel {
-  final String pillId;
-  final String pillName;
-  final String itemImage;
-  final String className;
-
-  ResultListModel({
-    required this.pillId,
-    required this.pillName,
-    required this.itemImage,
-    required this.className,
-  });
-
-  factory ResultListModel.fromJson(Map<String, dynamic> json) {
-    return ResultListModel(
-      pillId: json["pillId"] ?? '',
-      pillName: json["pillName"] ?? '',
-      itemImage: json["itemImage"] ?? '',
-      className: json["className"] ?? '',
-    );
-  }
-}
 
 class SelectSearchPage extends StatefulWidget {
-  final SearchData searchData;
+  final List<ResultListModel> searchResults;
 
-  const SelectSearchPage({super.key, required this.searchData});
+  const SelectSearchPage({super.key, required this.searchResults});
 
   @override
   SelectSearchPageState createState() => SelectSearchPageState();
@@ -41,42 +16,10 @@ class SelectSearchPage extends StatefulWidget {
 class SelectSearchPageState extends State<SelectSearchPage> {
   bool isWarning = false; //경고 색상 표시 여부
   String selectedId = ""; //선택된 ID 값
-  List<ResultListModel> searchResults = [];
 
   @override
   void initState() {
     super.initState();
-    fetchSearchResults();
-  }
-
-  Future<void> fetchSearchResults() async {
-    String baseUrl =
-        '${dotenv.env['PROJECT_URL']}/pill/search?pillShape=${widget.searchData.selectedShape}&color=${widget.searchData.selectedColor}';
-
-    if (widget.searchData.frontMark.isNotEmpty) {
-      baseUrl += '&frontMarking=${widget.searchData.frontMark}';
-    }
-    if (widget.searchData.backMark.isNotEmpty) {
-      baseUrl += '&backMarking=${widget.searchData.backMark}';
-    }
-
-    final url = Uri.parse(baseUrl);
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final decodedResponse = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedResponse);
-
-      setState(() {
-        if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
-          searchResults = (jsonResponse['data'] as List)
-              .map((data) => ResultListModel.fromJson(data))
-              .toList();
-        } else {
-          searchResults = [];
-        }
-      });
-    } else {}
   }
 
   void setWarning(bool warning) {
@@ -104,28 +47,48 @@ class SelectSearchPageState extends State<SelectSearchPage> {
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
                     selectImage: selectedId != ""
-                        ? searchResults
+                        ? widget.searchResults
                             .firstWhere((result) => result.pillId == selectedId)
                             .itemImage
                         : "",
                   ),
-                  CapsuleSelect(
-                    isWarning: isWarning,
-                    onWarningChanged: setWarning,
-                    selectedId: selectedId,
-                    onIdSelected: setCapsule,
-                    searchResults: searchResults,
-                  ),
-                  ResultButton(
-                    selectedId: selectedId,
-                    isWarning: isWarning,
-                    onWarningChanged: setWarning,
-                    selectImage: selectedId != ""
-                        ? searchResults
-                            .firstWhere((result) => result.pillId == selectedId)
-                            .itemImage
-                        : "",
-                  )
+                  if (widget.searchResults.isNotEmpty)
+                    Column(
+                      children: [
+                        CapsuleSelect(
+                          isWarning: isWarning,
+                          onWarningChanged: setWarning,
+                          selectedId: selectedId,
+                          onIdSelected: setCapsule,
+                          searchResults: widget.searchResults,
+                        ),
+                        ResultButton(
+                          selectedId: selectedId,
+                          isWarning: isWarning,
+                          onWarningChanged: setWarning,
+                          selectImage: selectedId != ""
+                              ? widget.searchResults
+                                  .firstWhere(
+                                      (result) => result.pillId == selectedId)
+                                  .itemImage
+                              : "",
+                        ),
+                      ],
+                    )
+                  else
+                    const Padding(
+                      padding: EdgeInsets.only(top: 50, bottom: 60),
+                      child: Center(
+                        child: Text(
+                          "검색 결과가 없습니다.",
+                          style: TextStyle(
+                            color: mainColor,
+                            fontFamily: 'NotoSans500',
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -266,101 +229,117 @@ class CapsuleSelect extends StatefulWidget {
 class CapsuleSelectState extends State<CapsuleSelect> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: widget.searchResults.map(
-        (data) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      widget.onIdSelected(data.pillId);
-                      if (widget.isWarning == true) {
-                        widget.onWarningChanged(false);
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      backgroundColor: whiteColor,
-                      foregroundColor: whiteColor,
-                      side: BorderSide(
-                          color: widget.selectedId == data.pillId
-                              ? mainColor
-                              : subColor),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 27, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+    if (widget.searchResults.isNotEmpty) {
+      return Column(
+        children: widget.searchResults.map(
+          (data) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        widget.onIdSelected(data.pillId);
+                        if (widget.isWarning == true) {
+                          widget.onWarningChanged(false);
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: whiteColor,
+                        foregroundColor: whiteColor,
+                        side: BorderSide(
+                            color: widget.selectedId == data.pillId
+                                ? mainColor
+                                : subColor),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 27, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 74.84,
+                            height: 40,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: data.itemImage == ""
+                                  ? Container(
+                                      decoration: BoxDecoration(
+                                        color: whiteColor,
+                                        border: Border.all(
+                                          color: mainColor,
+                                          width: 1.0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    )
+                                  : Image.network(
+                                      data.itemImage,
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 230,
+                                child: Text(
+                                  data.pillName,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: blackColor,
+                                      fontFamily: 'NotoSans500',
+                                      fontSize: 14),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 190,
+                                child: Text(
+                                  data.className,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: backColor,
+                                      fontFamily: 'NotoSans500',
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 74.84,
-                          height: 40,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: data.itemImage == ""
-                                ? Container(
-                                    decoration: BoxDecoration(
-                                      color: whiteColor,
-                                      border: Border.all(
-                                        color: mainColor,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  )
-                                : Image.network(
-                                    data.itemImage,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 230,
-                              child: Text(
-                                data.pillName,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: blackColor,
-                                    fontFamily: 'NotoSans500',
-                                    fontSize: 14),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 190,
-                              child: Text(
-                                data.className,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: backColor,
-                                    fontFamily: 'NotoSans500',
-                                    fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            );
+          },
+        ).toList(),
+      );
+    } else {
+      return const Padding(
+        padding: EdgeInsets.only(top: 50, bottom: 60),
+        child: Center(
+          child: Text(
+            "검색 결과가 없습니다.",
+            style: TextStyle(
+              color: mainColor,
+              fontFamily: 'NotoSans500',
+              fontSize: 15,
             ),
-          );
-        },
-      ).toList(),
-    );
+          ),
+        ),
+      );
+    }
   }
 }
 
@@ -383,6 +362,30 @@ class ResultButton extends StatefulWidget {
 }
 
 class ResultButtonState extends State<ResultButton> {
+  void onResultPage() async {
+    if (widget.selectedId == "") {
+      widget.onWarningChanged(true);
+    } else {
+      MedicineModel medicine = await fetchSearchResult(widget.selectedId);
+      bool inList = await alreadyPillList(widget.selectedId);
+      if (mounted) {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ResultPage(medicine: medicine, inList: inList),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+            opaque: false,
+            barrierColor: Colors.transparent,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -391,20 +394,7 @@ class ResultButtonState extends State<ResultButton> {
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: () {
-                if (widget.selectedId == "") {
-                  widget.onWarningChanged(true);
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ResultPage(
-                          selectedId: widget.selectedId,
-                          selectImage: widget.selectImage),
-                    ),
-                  );
-                }
-              },
+              onPressed: onResultPage,
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainColor,
                 padding: const EdgeInsets.symmetric(vertical: 13),

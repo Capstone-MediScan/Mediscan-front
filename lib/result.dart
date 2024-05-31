@@ -1,118 +1,116 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mediscan/data.dart';
+import 'package:mediscan/main.dart';
 import 'package:mediscan/theme/colors.dart';
-import 'package:http/http.dart' as http;
 
 class MedicineModel {
   final String pillId;
   final String pillName;
-  final String pillNameEng;
-  final String detail;
+  final String? pillNameEng;
+  final String? detail;
   final String? frontMarking;
   final String? backMarking;
-  final String shape;
-  final String width;
-  final String length;
-  final String thick;
-  final String entpName;
+  final String? shape;
+  final String? width;
+  final String? length;
+  final String? thick;
+  final String? entpName;
+  final String itemImage;
 
   MedicineModel({
     required this.pillId,
     required this.pillName,
-    required this.pillNameEng,
-    required this.detail,
+    this.pillNameEng,
+    this.detail,
     this.frontMarking,
     this.backMarking,
-    required this.shape,
-    required this.width,
-    required this.length,
-    required this.thick,
-    required this.entpName,
+    this.shape,
+    this.width,
+    this.length,
+    this.thick,
+    this.entpName,
+    required this.itemImage,
   });
 
   factory MedicineModel.fromJson(Map<String, dynamic> json) {
     return MedicineModel(
       pillId: json["pillId"] ?? '',
       pillName: json["pillName"] ?? '',
-      pillNameEng: json["pillNameEng"] ?? '',
-      detail: json["detail"] ?? '',
+      pillNameEng: json["pillNameEng"],
+      detail: json["detail"],
       frontMarking: json["frontMarking"],
       backMarking: json["backMarking"],
-      shape: json["shape"] ?? '',
-      width: json["width"] ?? '',
-      length: json["length"] ?? '',
-      thick: json["thick"] ?? '',
-      entpName: json["entpName"] ?? '',
+      shape: json["shape"],
+      width: json["width"],
+      length: json["length"],
+      thick: json["thick"],
+      entpName: json["entpName"],
+      itemImage: json["itemImage"] ?? '',
     );
   }
 }
 
 class ResultPage extends StatefulWidget {
-  final String selectedId;
-  final String selectImage;
+  final MedicineModel medicine;
+  final bool inList;
 
-  const ResultPage(
-      {super.key, required this.selectedId, required this.selectImage});
+  const ResultPage({super.key, required this.medicine, required this.inList});
 
   @override
   ResultPageState createState() => ResultPageState();
 }
 
 class ResultPageState extends State<ResultPage> {
-  MedicineModel medicine = MedicineModel(
-    pillId: '',
-    pillName: '',
-    pillNameEng: '',
-    detail: '',
-    frontMarking: '',
-    backMarking: '',
-    shape: '',
-    width: '',
-    length: '',
-    thick: '',
-    entpName: '',
-  );
-  bool inList = false;
+  late bool inList;
 
   @override
   void initState() {
     super.initState();
-    fetchSearchResults();
+    inList = widget.inList;
+    recentSearchPill();
   }
 
-  Future<void> fetchSearchResults() async {
-    final url =
-        Uri.parse('${dotenv.env['PROJECT_URL']}/pill/${widget.selectedId}');
-    final response = await http.get(url);
+  Future<void> recentSearchPill() async {
+    List<ResultListModel> recentList = await loadPillList("recentList");
 
-    if (response.statusCode == 200) {
-      final decodedResponse = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedResponse);
+    int existingIndex =
+        recentList.indexWhere((pill) => pill.pillId == widget.medicine.pillId);
 
-      setState(() {
-        if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
-          medicine = MedicineModel.fromJson(jsonResponse['data']);
-        } else {
-          medicine = MedicineModel(
-            pillId: '',
-            pillName: '',
-            pillNameEng: '',
-            detail: '',
-            frontMarking: '',
-            backMarking: '',
-            shape: '',
-            width: '',
-            length: '',
-            thick: '',
-            entpName: '',
-          );
-        }
-      });
-    } else {}
+    if (existingIndex != -1) {
+      ResultListModel existingPill = recentList.removeAt(existingIndex);
+      recentList.add(existingPill);
+    } else {
+      if (recentList.length >= 5) {
+        recentList.removeAt(0);
+      }
+      recentList.add(ResultListModel(
+        pillId: widget.medicine.pillId,
+        pillName: widget.medicine.pillName,
+        itemImage: widget.medicine.itemImage,
+        className: widget.medicine.detail ?? '',
+      ));
+    }
+    await savePillList(recentList, "recentList");
   }
 
-  void toggleInList() {
+  Future<void> addPillList() async {
+    List<ResultListModel> addList = await loadPillList("addList");
+
+    int existingIndex =
+        addList.indexWhere((pill) => pill.pillId == widget.medicine.pillId);
+
+    if (existingIndex != -1) {
+      addList.removeAt(existingIndex);
+    } else {
+      addList.add(ResultListModel(
+        pillId: widget.medicine.pillId,
+        pillName: widget.medicine.pillName,
+        itemImage: widget.medicine.itemImage,
+        className: widget.medicine.detail ?? '',
+      ));
+    }
+    await savePillList(addList, "addList");
+
     setState(() {
       inList = !inList;
     });
@@ -127,10 +125,10 @@ class ResultPageState extends State<ResultPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  BackBtnComponent(inList: inList, toggleInList: toggleInList),
+                  BackBtnComponent(
+                      inList: inList, addPillList: addPillList),
                   ResultComponent(
-                    medicine: medicine,
-                    selectImage: widget.selectImage,
+                    medicine: widget.medicine,
                   )
                 ],
               ),
@@ -144,10 +142,10 @@ class ResultPageState extends State<ResultPage> {
 
 class BackBtnComponent extends StatefulWidget {
   final bool inList;
-  final VoidCallback toggleInList;
+  final Future<void> Function() addPillList;
 
   const BackBtnComponent(
-      {super.key, required this.inList, required this.toggleInList});
+      {super.key, required this.inList, required this.addPillList});
 
   @override
   BackBtnState createState() => BackBtnState();
@@ -176,11 +174,7 @@ class BackBtnState extends State<BackBtnComponent> {
                   highlightColor: Colors.transparent,
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      widget.toggleInList();
-                    });
-                  },
+                  onPressed: widget.addPillList,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.inList ? deleteColor : mainColor,
                     foregroundColor: widget.inList ? deleteColor : mainColor,
@@ -212,10 +206,8 @@ class BackBtnState extends State<BackBtnComponent> {
 
 class ResultComponent extends StatefulWidget {
   final MedicineModel medicine;
-  final String selectImage;
 
-  const ResultComponent(
-      {super.key, required this.medicine, required this.selectImage});
+  const ResultComponent({super.key, required this.medicine});
 
   @override
   ResultState createState() => ResultState();
@@ -279,7 +271,7 @@ class ResultState extends State<ResultComponent> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: widget.selectImage == ""
+                child: widget.medicine.itemImage == ""
                     ? Container(
                         width: 290,
                         height: 155,
@@ -293,13 +285,14 @@ class ResultState extends State<ResultComponent> {
                         ),
                       )
                     : Image.network(
-                        widget.selectImage,
+                        widget.medicine.itemImage,
                         width: 290,
                         height: 155,
                       ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 40, bottom: 40),
+                padding: const EdgeInsets.only(
+                    top: 40, bottom: 40, left: 20, right: 20),
                 child: Text(
                   widget.medicine.pillName,
                   style: const TextStyle(
@@ -312,7 +305,12 @@ class ResultState extends State<ResultComponent> {
             ],
           ),
         ),
-        listContent('이름 ( 영문 )', widget.medicine.pillNameEng),
+        widget.medicine.pillNameEng != null
+            ? listContent('이름 ( 영문 )', "${widget.medicine.pillNameEng}")
+            : const SizedBox.shrink(),
+        widget.medicine.detail != null
+            ? listContent('효능', "${widget.medicine.detail}")
+            : const SizedBox.shrink(),
         widget.medicine.frontMarking == null &&
                 widget.medicine.backMarking != null
             ? listContent('식별표시 뒤', "${widget.medicine.backMarking}")
@@ -323,11 +321,17 @@ class ResultState extends State<ResultComponent> {
                         widget.medicine.backMarking != null
                     ? listContent('식별표시 앞 / 뒤',
                         "${widget.medicine.frontMarking} / ${widget.medicine.backMarking}")
-                    : const Column(),
-        listContent('외형', widget.medicine.detail),
-        listContent('길이 (가로, 세로, 두께) ( mm )',
-            "${widget.medicine.width} / ${widget.medicine.length} / ${widget.medicine.thick}"),
-        listContent('회사', widget.medicine.entpName),
+                    : const SizedBox.shrink(),
+        widget.medicine.shape != null
+            ? listContent('외형', "${widget.medicine.shape}")
+            : const SizedBox.shrink(),
+        widget.medicine.shape != null
+            ? listContent('길이 (가로, 세로, 두께) ( mm )',
+                "${widget.medicine.width} / ${widget.medicine.length} / ${widget.medicine.thick}")
+            : const SizedBox.shrink(),
+        widget.medicine.entpName != null
+            ? listContent('회사', "${widget.medicine.entpName}")
+            : const SizedBox.shrink(),
         const SizedBox(height: 20),
       ],
     );

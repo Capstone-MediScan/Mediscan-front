@@ -64,14 +64,16 @@ class UploadPageState extends State<UploadPage> {
     }
 
     // Ensure the base URL ends with a '/'
-    final Uri url = Uri.parse(baseUrl.endsWith('/pill') ? baseUrl : '$baseUrl/pill');
+    final Uri url =
+        Uri.parse(baseUrl.endsWith('/pill') ? baseUrl : '$baseUrl/pill');
     print("$url");
 
     // 원래 파일 경로를 사용하여 파일 업로드 수행
     final frontImagePath = widget.shapeData.frontImage?.path ?? '';
     final backImagePath = widget.shapeData.backImage?.path ?? '';
 
-    print("${widget.shapeData.selectedShape}, ${widget.shapeData.frontMark}, ${widget.shapeData.backMark}");
+    print(
+        "${widget.shapeData.selectedShape}, ${widget.shapeData.frontMark}, ${widget.shapeData.backMark}");
     print("Front Image: $frontImagePath");
     print("Back Image: $backImagePath");
 
@@ -99,8 +101,16 @@ class UploadPageState extends State<UploadPage> {
         print("Data sent successfully: $jsonResponse");
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => SelectPage(responseData: jsonResponse['data']),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => SelectPage(
+              responseData: jsonResponse['data'],
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+            opaque: false,
+            barrierColor: Colors.transparent,
           ),
         );
       } else {
@@ -117,7 +127,6 @@ class UploadPageState extends State<UploadPage> {
     final index = path.indexOf('image_picker');
     return index != -1 ? path.substring(index) : path;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -153,13 +162,13 @@ class UploadPageState extends State<UploadPage> {
               ),
             ),
           ),
-          Text(
-            'Front Image: ${removeBeforeImagePicker(widget.shapeData.frontImage?.path ?? '')}, '
-                'Back Image: ${removeBeforeImagePicker(widget.shapeData.backImage?.path ?? '')}',
-          ),
-          Text(
-            '${widget.shapeData.selectedShape}, ${widget.shapeData.frontMark}, ${widget.shapeData.backMark}',
-          ),
+          // Text(
+          //   'Front Image: ${removeBeforeImagePicker(widget.shapeData.frontImage?.path ?? '')}, '
+          //   'Back Image: ${removeBeforeImagePicker(widget.shapeData.backImage?.path ?? '')}',
+          // ),
+          // Text(
+          //   '${widget.shapeData.selectedShape}, ${widget.shapeData.frontMark}, ${widget.shapeData.backMark}',
+          // ),
           Builder(
             builder: (BuildContext context) {
               return LargeButton(
@@ -196,12 +205,12 @@ class PhotoUploadComponent extends StatefulWidget {
 
   const PhotoUploadComponent(
       {super.key,
-        required this.isWarning,
-        required this.onWarningChanged,
-        required this.setFrontImage,
-        required this.setBackImage,
-        this.frontImage,
-        this.backImage});
+      required this.isWarning,
+      required this.onWarningChanged,
+      required this.setFrontImage,
+      required this.setBackImage,
+      this.frontImage,
+      this.backImage});
 
   @override
   PhotoUploadState createState() => PhotoUploadState();
@@ -209,10 +218,10 @@ class PhotoUploadComponent extends StatefulWidget {
 
 class PhotoUploadState extends State<PhotoUploadComponent> {
   Widget buildImage(
-      String title,
-      File? image,
-      bool isFront,
-      ) {
+    String title,
+    File? image,
+    bool isFront,
+  ) {
     return Column(
       children: [
         Text(
@@ -231,50 +240,50 @@ class PhotoUploadState extends State<PhotoUploadComponent> {
             borderRadius: BorderRadius.circular(20),
             child: image != null
                 ? GestureDetector(
-              onTap: () => {
-                onPhoto(ImageSource.camera, isFront),
-                if (widget.isWarning == true)
-                  {
-                    widget.onWarningChanged(false),
-                  }
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: FileImage(image),
-                    fit: BoxFit.cover,
-                  ),
-                  border: Border.all(
-                    color: mainColor,
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            )
+                    onTap: () => {
+                      onPhoto(ImageSource.camera, isFront),
+                      if (widget.isWarning == true)
+                        {
+                          widget.onWarningChanged(false),
+                        }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: FileImage(image),
+                          fit: BoxFit.cover,
+                        ),
+                        border: Border.all(
+                          color: mainColor,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  )
                 : ElevatedButton(
-              onPressed: () => {
-                onPhoto(ImageSource.camera, isFront),
-                if (widget.isWarning == true)
-                  {
-                    widget.onWarningChanged(false),
-                  }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: whiteColor,
-                foregroundColor: whiteColor,
-                surfaceTintColor: whiteColor,
-                side: const BorderSide(color: mainColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Image.asset(
-                'assets/images/plus.png',
-                width: 40,
-                height: 40,
-              ),
-            ),
+                    onPressed: () => {
+                      onPhoto(ImageSource.camera, isFront),
+                      if (widget.isWarning == true)
+                        {
+                          widget.onWarningChanged(false),
+                        }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: whiteColor,
+                      foregroundColor: whiteColor,
+                      surfaceTintColor: whiteColor,
+                      side: const BorderSide(color: mainColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Image.asset(
+                      'assets/images/plus.png',
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
           ),
         ),
       ],
