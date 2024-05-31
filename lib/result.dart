@@ -325,7 +325,8 @@ class ResultState extends State<ResultComponent> {
                       ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 40, bottom: 40),
+                padding: const EdgeInsets.only(
+                    top: 40, bottom: 40, left: 20, right: 20),
                 child: Text(
                   widget.medicine.pillName,
                   style: const TextStyle(
