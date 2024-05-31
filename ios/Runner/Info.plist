@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>이 앱에서는 카메라를 사용해 사진을 촬영합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>이 앱에서는 사진 라이브러리에 접근합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -45,9 +49,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-    <string>이 앱에서는 카메라를 사용해 사진을 촬영합니다.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>이 앱에서는 사진 라이브러리에 접근합니다.</string>
 </dict>
 </plist>

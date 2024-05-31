@@ -4,7 +4,7 @@ import 'package:mediscan/theme/colors.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:io' show Platform;
-import 'package:mediscan/alertsetting.dart'; // 필요한 다른 파일 import
+import 'package:mediscan/alertsetting.dart';
 
 class MediScanHome extends StatefulWidget {
   const MediScanHome({Key? key}) : super(key: key); // const 추가
