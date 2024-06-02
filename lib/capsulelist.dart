@@ -154,7 +154,7 @@ class ListState extends State<ListComponent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 250,
+                        width: 230,
                         child: Text(
                           data.pillName,
                           overflow: TextOverflow.ellipsis,
@@ -167,7 +167,7 @@ class ListState extends State<ListComponent> {
                       ),
                       const SizedBox(height: 5),
                       SizedBox(
-                        width: 250,
+                        width: 230,
                         child: Text(
                           data.className,
                           overflow: TextOverflow.ellipsis,
