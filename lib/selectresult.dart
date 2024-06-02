@@ -9,6 +9,7 @@ class ResultListModel {
   final String itemImage;
   final String pillName;
   final String className;
+  final int rank;
 
   ResultListModel({
     required this.pillId,
@@ -16,6 +17,7 @@ class ResultListModel {
     required this.itemImage,
     required this.pillName,
     required this.className,
+    required this.rank,
   });
 }
 
@@ -44,6 +46,7 @@ class SelectPageState extends State<SelectPage> {
         itemImage: data['itemImage'],
         pillName: data['pillName'],
         className: data['className'],
+        rank: data['rank'],
       );
     }).toList();
   }
@@ -74,8 +77,8 @@ class SelectPageState extends State<SelectPage> {
                     onWarningChanged: setWarning,
                     selectImage: selectedId != ""
                         ? scanResults
-                        .firstWhere((result) => result.pillId == selectedId)
-                        .itemImage
+                            .firstWhere((result) => result.pillId == selectedId)
+                            .itemImage
                         : "",
                   ),
                   CapsuleSelect(
@@ -89,8 +92,8 @@ class SelectPageState extends State<SelectPage> {
                     selectedId: selectedId,
                     selectImage: selectedId != ""
                         ? scanResults
-                        .firstWhere((result) => result.pillId == selectedId)
-                        .itemImage
+                            .firstWhere((result) => result.pillId == selectedId)
+                            .itemImage
                         : "",
                     isWarning: isWarning,
                     onWarningChanged: setWarning,
@@ -162,39 +165,39 @@ class PhotoState extends State<PhotoComponent> {
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           widget.selectImage != ""
               ? SizedBox(
-            width: 290,
-            height: 155,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: widget.selectImage == ""
-                  ? null
-                  : Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(widget.selectImage),
-                    fit: BoxFit.cover,
+                  width: 290,
+                  height: 155,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: widget.selectImage == ""
+                        ? null
+                        : Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(widget.selectImage),
+                                fit: BoxFit.cover,
+                              ),
+                              border: Border.all(
+                                color: mainColor,
+                                width: 1,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
                   ),
-                  border: Border.all(
-                    color: mainColor,
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          )
+                )
               : Container(
-            width: 290,
-            height: 155,
-            decoration: BoxDecoration(
-              color: whiteColor,
-              border: Border.all(
-                color: mainColor,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
+                  width: 290,
+                  height: 155,
+                  decoration: BoxDecoration(
+                    color: whiteColor,
+                    border: Border.all(
+                      color: mainColor,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
         ]),
         Padding(
           padding: const EdgeInsets.only(bottom: 16, top: 16),
@@ -237,7 +240,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
   Widget build(BuildContext context) {
     return Column(
       children: widget.buttonTexts.map(
-            (data) {
+        (data) {
           return Padding(
             padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
             child: Row(
@@ -269,7 +272,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          '${data.confidence}%',
+                          '${data.rank}위',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: mainColor,
@@ -286,19 +289,19 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                             borderRadius: BorderRadius.circular(10),
                             child: data.itemImage == ""
                                 ? Container(
-                              decoration: BoxDecoration(
-                                color: whiteColor,
-                                border: Border.all(
-                                  color: mainColor,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            )
+                                    decoration: BoxDecoration(
+                                      color: whiteColor,
+                                      border: Border.all(
+                                        color: mainColor,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  )
                                 : Image.network(
-                              data.itemImage,
-                              fit: BoxFit.cover,
-                            ),
+                                    data.itemImage,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
                         const SizedBox(
@@ -352,10 +355,10 @@ class ResultButton extends StatefulWidget {
 
   const ResultButton(
       {super.key,
-        required this.selectedId,
-        required this.isWarning,
-        required this.onWarningChanged,
-        required this.selectImage});
+      required this.selectedId,
+      required this.isWarning,
+      required this.onWarningChanged,
+      required this.selectImage});
 
   @override
   ResultButtonState createState() => ResultButtonState();
