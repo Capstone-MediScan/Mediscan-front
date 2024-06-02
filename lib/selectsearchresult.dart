@@ -292,7 +292,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
-                                width: 230,
+                                width: 220,
                                 child: Text(
                                   data.pillName,
                                   overflow: TextOverflow.ellipsis,

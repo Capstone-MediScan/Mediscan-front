@@ -113,14 +113,18 @@ class RootState extends State<Root> {
           backgroundColor: whiteColor,
           scrolledUnderElevation: 0,
           toolbarHeight: 65,
-          title: GestureDetector(
-            onTap: () {
-              reloadPillList();
-            },
-            child: const Text(
-              'MediScan',
-              style: TextStyle(
-                  color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+          title: SizedBox(
+            width: double.infinity,
+            child: GestureDetector(
+              onTap: () {
+                reloadPillList();
+              },
+              child: const Text(
+                'MediScan',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                    color: mainColor, fontFamily: 'Inter900', fontSize: 24),
+              ),
             ),
           ),
         ),
@@ -486,7 +490,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 250,
+                        width: 230,
                         child: Text(
                           data.pillName,
                           overflow: TextOverflow.ellipsis,
@@ -499,7 +503,7 @@ class RecentSearchListState extends State<RecentSearchListComponent> {
                       ),
                       const SizedBox(height: 5),
                       SizedBox(
-                        width: 250,
+                        width: 230,
                         child: Text(
                           data.className,
                           overflow: TextOverflow.ellipsis,

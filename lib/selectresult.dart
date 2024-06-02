@@ -236,6 +236,12 @@ class CapsuleSelect extends StatefulWidget {
 }
 
 class CapsuleSelectState extends State<CapsuleSelect> {
+  String getRankString(int rank) {
+    if (rank == 1) return '${rank}st';
+    if (rank == 2) return '${rank}nd';
+    if (rank == 3) return '${rank}rd';
+    return '${rank}th';
+  }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -272,7 +278,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          '${data.rank}위',
+                          getRankString(data.rank),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: mainColor,
@@ -311,7 +317,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
-                              width: 160,
+                              width: 140,
                               child: Text(
                                 data.pillName,
                                 overflow: TextOverflow.ellipsis,
@@ -322,7 +328,7 @@ class CapsuleSelectState extends State<CapsuleSelect> {
                               ),
                             ),
                             SizedBox(
-                              width: 160,
+                              width: 140,
                               child: Text(
                                 data.className,
                                 overflow: TextOverflow.ellipsis,
