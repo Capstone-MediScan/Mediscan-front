@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mediscan/capsulescan.dart';
 import 'package:mediscan/largebutton.dart';
 import 'package:mediscan/selectresult.dart';
 import 'package:mediscan/theme/colors.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class UploadShapeData {
   String selectedShape;
@@ -127,10 +127,58 @@ class UploadPageState extends State<UploadPage> {
         print("Failed to send data: ${response.statusCode}");
         final responseData = await response.stream.bytesToString();
         print("Response body: $responseData");
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => CapsuleScan(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+            opaque: false,
+            barrierColor: Colors.transparent,
+          ),
+        );
+        showErrorMessage();
+        setIsLoading(false);
       }
     } catch (e) {
+      setIsLoading(false); // 로딩 상태 해제
+
       print("Error sending request: $e");
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => CapsuleScan(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+          opaque: false,
+          barrierColor: Colors.transparent,
+        ),
+      );
+      showErrorMessage();
+      setIsLoading(false);
     }
+  }
+
+  void showErrorMessage() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("알약 인식 오류"),
+          content: const Text("알약을 인식하지 못했습니다."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("확인"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String removeBeforeImagePicker(String path) {
@@ -142,14 +190,13 @@ class UploadPageState extends State<UploadPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: isLoading
-          ? const Center(
+          ?  Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SpinKitRing(
-              color: mainColor,
-              size: 55,
-            ),
+            Image.asset("assets/images/loading.gif",
+            width: 200,
+            height:200,)
           ],
         ),
       )
